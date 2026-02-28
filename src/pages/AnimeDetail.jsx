@@ -382,3 +382,4 @@ function AnimeDetail() {
 }
 
 export default AnimeDetail
+// update
