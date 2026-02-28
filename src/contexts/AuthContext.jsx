@@ -99,11 +99,27 @@ export function AuthProvider({ children }) {
         return { error: null }
     }
 
+    const signInWithGoogle = async () => {
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/watch'
+                }
+            })
+            if (error) return { data: null, error: { message: translateAuthError(error.message) } }
+            return { data, error: null }
+        } catch (err) {
+            return { data: null, error: { message: translateAuthError(err.message) } }
+        }
+    }
+
     const value = {
         user,
         loading,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         isAuthenticated: !!user
     }

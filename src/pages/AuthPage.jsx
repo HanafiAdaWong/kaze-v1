@@ -13,11 +13,21 @@ function AuthPage() {
     const [success, setSuccess] = useState('')
     const [loading, setLoading] = useState(false)
 
-    const { signIn, signUp } = useAuth()
+    const { signIn, signUp, signInWithGoogle } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
 
     const from = location.state?.from || '/watch'
+
+    const handleGoogleLogin = async () => {
+        setError('')
+        setLoading(true)
+        const { error } = await signInWithGoogle()
+        if (error) {
+            setError(error.message)
+            setLoading(false)
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -200,6 +210,20 @@ function AuthPage() {
                                     <UserPlus size={18} /> Daftar
                                 </>
                             )}
+                        </button>
+
+                        <div className="auth-separator">
+                            <span>Atau</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="auth-google-btn"
+                            onClick={handleGoogleLogin}
+                            disabled={loading}
+                        >
+                            <img src="https://www.google.com/favicon.ico" alt="Google" className="google-icon" />
+                            <span>Lanjutkan dengan Google</span>
                         </button>
                     </form>
 
