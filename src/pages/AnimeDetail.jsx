@@ -205,6 +205,15 @@ function AnimeDetail() {
                                         <BookOpen size={18} /> Sinopsis
                                     </h2>
                                     <p className="detail__synopsis">{anime.synopsis}</p>
+                                    <div style={{ marginTop: '20px' }}>
+                                        <Link
+                                            to={`/watch?q=${encodeURIComponent(anime.title)}`}
+                                            className="detail__btn detail__btn--primary"
+                                            style={{ display: 'inline-flex', width: 'auto' }}
+                                        >
+                                            <Play size={16} fill="currentColor" /> Nonton Sekarang
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
 

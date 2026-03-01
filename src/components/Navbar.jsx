@@ -100,7 +100,11 @@ function Navbar() {
                                         onClick={() => setShowUserMenu(!showUserMenu)}
                                     >
                                         <div className="navbar__avatar">
-                                            {displayName.charAt(0).toUpperCase()}
+                                            {user?.user_metadata?.avatar_url ? (
+                                                <img src={user.user_metadata.avatar_url} alt="Avatar" className="navbar__avatar-img" />
+                                            ) : (
+                                                displayName.charAt(0).toUpperCase()
+                                            )}
                                         </div>
                                         <span className="navbar__user-name">{displayName}</span>
                                     </button>
@@ -113,8 +117,14 @@ function Navbar() {
                                             />
                                             <div className="navbar__user-menu">
                                                 <div className="navbar__user-menu-header">
-                                                    <div className="navbar__user-menu-email">{user?.email}</div>
+                                                    <div className="navbar__user-menu-info">
+                                                        <span className="navbar__user-menu-name">{displayName}</span>
+                                                        <span className="navbar__user-menu-email">{user?.email}</span>
+                                                    </div>
                                                 </div>
+                                                <Link to="/profile" className="navbar__user-menu-item">
+                                                    <User size={16} /> Profil
+                                                </Link>
                                                 <Link to="/mylist" className="navbar__user-menu-item">
                                                     <Heart size={16} /> List Saya
                                                 </Link>

@@ -114,6 +114,19 @@ export function AuthProvider({ children }) {
         }
     }
 
+    const updateProfile = async (updates) => {
+        try {
+            const { data, error } = await supabase.auth.updateUser({
+                data: updates
+            })
+            if (error) return { data: null, error: { message: translateAuthError(error.message) } }
+            setUser(data.user)
+            return { data, error: null }
+        } catch (err) {
+            return { data: null, error: { message: translateAuthError(err.message) } }
+        }
+    }
+
     const value = {
         user,
         loading,
@@ -121,6 +134,7 @@ export function AuthProvider({ children }) {
         signIn,
         signInWithGoogle,
         signOut,
+        updateProfile,
         isAuthenticated: !!user
     }
 

@@ -10,6 +10,7 @@ import WatchAnimeDetail from './pages/WatchAnimeDetail'
 import EpisodePlayer from './pages/EpisodePlayer'
 import AuthPage from './pages/AuthPage'
 import MyList from './pages/MyList'
+import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -25,6 +26,11 @@ function App() {
                     <Route path="/mylist" element={
                         <ProtectedRoute>
                             <MyList />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                        <ProtectedRoute>
+                            <Profile />
                         </ProtectedRoute>
                     } />
                     <Route path="/watch/:animeId" element={<WatchAnimeDetail />} />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
-    ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2, Lock, X
+    ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2
 } from 'lucide-react'
 import { getEpisodeDetail, getServerUrl } from '../services/api'
 import Loader from '../components/Loader'
@@ -18,7 +18,6 @@ function EpisodePlayer() {
     const [playerLoading, setPlayerLoading] = useState(false)
     const [error, setError] = useState(null)
     const [serverError, setServerError] = useState(null)
-    const [showPaymentModal, setShowPaymentModal] = useState(false)
 
     // Fetch episode detail
     useEffect(() => {
@@ -39,9 +38,8 @@ function EpisodePlayer() {
                     setStreamUrl(data.defaultStreamingUrl)
                     setActiveServer('default')
                 } else if (data.server?.qualities?.length > 0) {
-                    // Find first non-720p quality with servers
+                    // Find first quality with servers
                     for (const q of data.server.qualities) {
-                        if (q.title === '720p') continue
                         if (q.serverList?.length > 0) {
                             const first = q.serverList[0]
                             setActiveServer(first.serverId)
@@ -91,12 +89,6 @@ function EpisodePlayer() {
 
     const handleServerClick = async (serverId, qualityTitle) => {
         if (serverId === activeServer) return
-
-        // 720p Paywall check
-        if (qualityTitle === '720p') {
-            setShowPaymentModal(true)
-            return
-        }
 
         if (serverId === 'default' && episode?.defaultStreamingUrl) {
             setStreamUrl(episode.defaultStreamingUrl)
@@ -240,17 +232,17 @@ function EpisodePlayer() {
                     {allQualities.map((q) => (
                         <div key={q.title} className="server-quality">
                             <div className="server-quality__label">
-                                {q.title} {q.title === '720p' && <Lock size={12} style={{ marginLeft: '4px', color: 'var(--warning)' }} />}
+                                {q.title}
                             </div>
                             <div className="server-quality__list">
                                 {q.serverList.map((s) => (
                                     <button
                                         key={s.serverId}
-                                        className={`server-btn ${activeServer === s.serverId ? 'server-btn--active' : ''} ${q.title === '720p' ? 'server-btn--locked' : ''}`}
+                                        className={`server-btn ${activeServer === s.serverId ? 'server-btn--active' : ''}`}
                                         onClick={() => handleServerClick(s.serverId, q.title)}
-                                        disabled={playerLoading && q.title !== '720p'}
+                                        disabled={playerLoading}
                                     >
-                                        {q.title === '720p' ? <Lock size={14} /> : <Play size={14} />} {s.title}
+                                        <Play size={14} /> {s.title}
                                     </button>
                                 ))}
                             </div>
@@ -281,41 +273,6 @@ function EpisodePlayer() {
                 </div>
             </div>
 
-            {/* Payment Modal */}
-            {showPaymentModal && (
-                <div className="modal-overlay" onClick={() => setShowPaymentModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close" onClick={() => setShowPaymentModal(false)}>
-                            <X size={20} />
-                        </button>
-                        <div className="payment-modal">
-                            <div className="payment-modal__icon">
-                                <Lock size={40} className="warning-text" />
-                            </div>
-                            <h2 className="payment-modal__title">Akses <span className="accent">Premium</span> Terkunci</h2>
-                            <p className="payment-modal__text">
-                                Untuk menonton dengan resolusi <strong>720p</strong>, kamu harus melakukan aktivasi fitur kikir.
-                            </p>
-                            <div className="payment-card">
-                                <div className="payment-card__row">
-                                    <span>Nominal Transfer:</span>
-                                    <strong className="accent">Rp. 10.000</strong>
-                                </div>
-                                <div className="payment-card__row">
-                                    <span>Nomor DANA/Tujuan:</span>
-                                    <strong style={{ color: 'var(--text-primary)', fontSize: '1.2rem' }}>083829622892</strong>
-                                </div>
-                            </div>
-                            <p className="payment-modal__note">
-                                Sertakan email akun kamu di catatan transfer. Setelah transfer, hubungi admin untuk aktivasi instan.
-                            </p>
-                            <button className="payment-modal__btn" onClick={() => setShowPaymentModal(false)}>
-                                Saya Mengerti
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }
