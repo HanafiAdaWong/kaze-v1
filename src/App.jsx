@@ -11,6 +11,7 @@ import EpisodePlayer from './pages/EpisodePlayer'
 import AuthPage from './pages/AuthPage'
 import MyList from './pages/MyList'
 import Profile from './pages/Profile'
+import History from './pages/History'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
                             <Profile />
                         </ProtectedRoute>
                     } />
+                    <Route path="/history" element={<History />} />
                     <Route path="/watch/:animeId" element={<WatchAnimeDetail />} />
                     <Route
                         path="/watch/:animeId/episode/:episodeId"

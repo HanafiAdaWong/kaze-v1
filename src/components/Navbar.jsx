@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Play, LogIn, LogOut, User, Heart } from 'lucide-react'
+import { Search, Play, LogIn, LogOut, User, Heart, Clock } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Navbar() {
@@ -85,9 +85,14 @@ function Navbar() {
                         </span>
                     </Link>
                     {isAuthenticated && (
-                        <Link to="/mylist" className={`navbar__link ${location.pathname === '/mylist' ? 'navbar__link--active' : ''}`}>
-                            List Saya
-                        </Link>
+                        <>
+                            <Link to="/mylist" className={`navbar__link ${location.pathname === '/mylist' ? 'navbar__link--active' : ''}`}>
+                                List Saya
+                            </Link>
+                            <Link to="/history" className={`navbar__link ${location.pathname === '/history' ? 'navbar__link--active' : ''}`}>
+                                History
+                            </Link>
+                        </>
                     )}
 
                     {/* Auth section */}
@@ -127,6 +132,9 @@ function Navbar() {
                                                 </Link>
                                                 <Link to="/mylist" className="navbar__user-menu-item">
                                                     <Heart size={16} /> List Saya
+                                                </Link>
+                                                <Link to="/history" className="navbar__user-menu-item">
+                                                    <Clock size={16} /> History
                                                 </Link>
                                                 <button
                                                     className="navbar__user-menu-item navbar__user-menu-item--danger"

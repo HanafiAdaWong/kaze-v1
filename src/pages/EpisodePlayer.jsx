@@ -3,7 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2
 } from 'lucide-react'
-import { getEpisodeDetail, getServerUrl } from '../services/api'
+import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail } from '../services/api'
+import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
 
@@ -12,6 +13,7 @@ function EpisodePlayer() {
     const navigate = useNavigate()
 
     const [episode, setEpisode] = useState(null)
+    const [animeDetail, setAnimeDetail] = useState(null)
     const [activeServer, setActiveServer] = useState(null)
     const [streamUrl, setStreamUrl] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -29,9 +31,27 @@ function EpisodePlayer() {
             setActiveServer(null)
             setServerError(null)
             try {
-                const data = await getEpisodeDetail(episodeId)
+                // Fetch both episode and anime detail (for history)
+                const [data, detail] = await Promise.all([
+                    getEpisodeDetail(episodeId),
+                    getWatchAnimeDetail(animeId).catch(() => null)
+                ])
+
                 if (cancelled) return
                 setEpisode(data)
+                setAnimeDetail(detail)
+
+                // Save to history
+                if (detail) {
+                    addToHistory({
+                        animeId,
+                        episodeId,
+                        title: detail.english || detail.synonyms || detail.title || animeId,
+                        episodeTitle: data.title || `Episode ${episodeId}`,
+                        poster: detail.poster,
+                        timestamp: Date.now()
+                    })
+                }
 
                 // Auto-load first available server
                 if (data.defaultStreamingUrl) {
