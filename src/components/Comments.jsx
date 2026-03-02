@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Send, Trash2, User as UserIcon, Reply, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, Send, Trash2, User as UserIcon, Reply, ChevronDown, ChevronUp, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getComments, postComment, deleteComment, getReplies } from '../services/comments';
+import { getComments, postComment, deleteComment, getReplies, toggleLike, checkUserLiked } from '../services/comments';
 import { Link } from 'react-router-dom';
 import Loader from './Loader';
+import LevelBadge from './LevelBadge';
 
 function CommentItem({ comment, animeId, user, onCommentDeleted }) {
     const [replies, setReplies] = useState([]);
@@ -12,12 +13,37 @@ function CommentItem({ comment, animeId, user, onCommentDeleted }) {
     const [replyContent, setReplyContent] = useState('');
     const [submittingReply, setSubmittingReply] = useState(false);
     const [loadingReplies, setLoadingReplies] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(comment.likes_count || 0);
+
+    // Track local reply count to show immediately after posting
+    const [localReplyCount, setLocalReplyCount] = useState(comment.reply_count || 0);
+
+    useEffect(() => {
+        if (user && comment.id) {
+            checkUserLiked(user.id, comment.id).then(setIsLiked);
+        }
+    }, [user, comment.id]);
+
+    const handleLike = async () => {
+        if (!user) {
+            alert('Silakan login untuk menyukai komentar.');
+            return;
+        }
+
+        const { liked, error } = await toggleLike(user.id, comment.id);
+        if (!error) {
+            setIsLiked(liked);
+            setLikesCount(prev => liked ? prev + 1 : prev - 1);
+        }
+    };
 
     const fetchReplies = async () => {
         setLoadingReplies(true);
         const { data, error } = await getReplies(comment.id);
         if (!error) {
             setReplies(data || []);
+            setLocalReplyCount(data?.length || 0);
         }
         setLoadingReplies(false);
     };
@@ -27,20 +53,20 @@ function CommentItem({ comment, animeId, user, onCommentDeleted }) {
         if (!replyContent.trim() || submittingReply) return;
 
         setSubmittingReply(true);
-        const { data, error } = await postComment(user, animeId, replyContent, comment.id);
+        const { data, error } = await postComment(user, animeId, replyContent, comment.id, comment.username);
         if (error) {
             alert('Gagal mengirim balasan: ' + error.message);
         } else {
             setReplyContent('');
             setIsReplying(false);
-            if (!showReplies) setShowReplies(true);
+            setShowReplies(true); // Always expand to show the fresh reply
             fetchReplies();
         }
         setSubmittingReply(false);
     };
 
     const toggleReplies = () => {
-        if (!showReplies && replies.length === 0) {
+        if (!showReplies && (localReplyCount > 0 || replies.length > 0)) {
             fetchReplies();
         }
         setShowReplies(!showReplies);
@@ -72,11 +98,26 @@ function CommentItem({ comment, animeId, user, onCommentDeleted }) {
                         <Link to={`/user/${comment.user_id}`} className="comment-item__username">
                             {comment.username}
                         </Link>
+                        <LevelBadge xp={comment.xp} size="sm" />
                         <span className="comment-item__date">
                             {new Date(comment.created_at).toLocaleDateString()}
                         </span>
+                        {comment.reply_to_username && (
+                            <span className="comment-item__reply-to">
+                                <Reply size={10} style={{ transform: 'rotate(180deg)', marginRight: '2px' }} />
+                                membalas <span>@{comment.reply_to_username}</span>
+                            </span>
+                        )}
                     </div>
                     <div className="comment-item__actions">
+                        <button
+                            className={`comment-item__like-btn ${isLiked ? 'comment-item__like-btn--active' : ''}`}
+                            onClick={handleLike}
+                            title={isLiked ? "Batal Suka" : "Suka"}
+                        >
+                            <Heart size={14} fill={isLiked ? "currentColor" : "none"} />
+                            {likesCount > 0 && <span>{likesCount}</span>}
+                        </button>
                         {user && (
                             <button
                                 className="comment-item__reply-btn"
@@ -99,9 +140,9 @@ function CommentItem({ comment, animeId, user, onCommentDeleted }) {
                 </div>
                 <p className="comment-item__content">{comment.content}</p>
 
-                {comment.reply_count > 0 && !showReplies && (
+                {(localReplyCount > 0 || replies.length > 0) && !showReplies && (
                     <button className="comment-item__view-replies" onClick={toggleReplies}>
-                        <ChevronDown size={14} /> Lihat {comment.reply_count} balasan
+                        <ChevronDown size={14} /> Lihat {localReplyCount} balasan
                     </button>
                 )}
             </div>

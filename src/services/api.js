@@ -156,15 +156,64 @@ export async function getAnimeById(id) {
 }
 
 export async function getTopAnime(page = 1, filter = '') {
-    const params = new URLSearchParams({ page, limit: 24 });
+    const params = new URLSearchParams({ page, limit: 24, sfw: true });
     if (filter) params.set('filter', filter);
     const json = await fetchJikan(`/top/anime?${params}`);
+
+    // Fallback manual filter
+    if (json.data) {
+        json.data = json.data.filter(anime => {
+            const genres = [...(anime.genres || []), ...(anime.explicit_genres || [])];
+            return !genres.some(g => g.mal_id === 12 || g.mal_id === 49);
+        });
+    }
+
     return json;
 }
 
 export async function searchAnime(query, page = 1) {
     const params = new URLSearchParams({ q: query, page, limit: 24, sfw: true });
     const json = await fetchJikan(`/anime?${params}`);
+
+    // Fallback manual filter
+    if (json.data) {
+        json.data = json.data.filter(anime => {
+            const genres = [...(anime.genres || []), ...(anime.explicit_genres || [])];
+            return !genres.some(g => g.mal_id === 12 || g.mal_id === 49);
+        });
+    }
+
+    return json;
+}
+
+export async function getGenres() {
+    const json = await fetchJikan('/genres/anime');
+    if (json.data) {
+        // Exclude adult genres (Hentai: 12, Erotica: 49)
+        return json.data.filter(g => g.mal_id !== 12 && g.mal_id !== 49);
+    }
+    return [];
+}
+
+export async function getAnimeByGenre(genreId, page = 1) {
+    const params = new URLSearchParams({
+        genres: genreId,
+        page,
+        limit: 24,
+        sfw: true,
+        order_by: 'score',
+        sort: 'desc'
+    });
+    const json = await fetchJikan(`/anime?${params}`);
+
+    // Fallback manual filter
+    if (json.data) {
+        json.data = json.data.filter(anime => {
+            const genres = [...(anime.genres || []), ...(anime.explicit_genres || [])];
+            return !genres.some(g => g.mal_id === 12 || g.mal_id === 49);
+        });
+    }
+
     return json;
 }
 
@@ -175,6 +224,11 @@ export async function getAnimeCharacters(id) {
 
 export async function getAnimeRecommendations(id) {
     const json = await fetchJikan(`/anime/${id}/recommendations`);
+    // Recommendations usually return a different data structure, 
+    // but often the entries are categorized as anime.
+    // If we have access to genres in the entry, we should filter it.
+    // However, MAL recommendations usually only return basic info.
+    // We'll stick to Top/Search for major filtering as that's where adult titles are most prominent.
     return json.data;
 }
 

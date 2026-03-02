@@ -8,10 +8,13 @@ import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
 import { translate } from '../utils/translator'
+import { useAuth } from '../contexts/AuthContext'
+import { addXP } from '../services/userStats'
 
 function EpisodePlayer() {
     const { animeId, episodeId } = useParams()
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     const [episode, setEpisode] = useState(null)
     const [animeDetail, setAnimeDetail] = useState(null)
@@ -65,6 +68,11 @@ function EpisodePlayer() {
                         poster: detail.poster,
                         timestamp: Date.now()
                     })
+                }
+
+                // Add XP (10 points per episode watch)
+                if (user) {
+                    addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
                 }
 
                 // Auto-load first available server

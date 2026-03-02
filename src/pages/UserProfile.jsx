@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { getUserProfile, getUserComments } from '../services/comments'
-import { User, MessageSquare, Calendar, ArrowLeft, Loader2, Play } from 'lucide-react'
+import { getUserStats } from '../services/userStats'
+import { User, MessageSquare, Calendar, ArrowLeft, Loader2, Play, Star } from 'lucide-react'
 import Loader from '../components/Loader'
+import LevelBadge from '../components/LevelBadge'
 
 function UserProfile() {
     const { userId } = useParams()
     const navigate = useNavigate()
     const [profile, setProfile] = useState(null)
     const [comments, setComments] = useState([])
+    const [stats, setStats] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -17,16 +20,19 @@ function UserProfile() {
             setLoading(true)
             setError(null)
             try {
-                const [profileRes, commentsRes] = await Promise.all([
+                const [profileRes, commentsRes, statsRes] = await Promise.all([
                     getUserProfile(userId),
-                    getUserComments(userId)
+                    getUserComments(userId),
+                    getUserStats(userId)
                 ])
 
                 if (profileRes.error) throw profileRes.error
                 if (commentsRes.error) throw commentsRes.error
+                // Stats might be missing if they never watched, that's okay
 
                 setProfile(profileRes.data)
                 setComments(commentsRes.data || [])
+                setStats(statsRes.data)
             } catch (err) {
                 console.error('Error fetching user profile:', err)
                 setError('Gagal memuat profil pengguna.')
@@ -84,7 +90,15 @@ function UserProfile() {
                         )}
                     </div>
                     <div className="user-profile-info">
-                        <h1 className="user-profile-username">{profile.username}</h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                            <h1 className="user-profile-username" style={{ margin: 0 }}>{profile.username}</h1>
+                            {stats && <LevelBadge xp={stats.xp} size="lg" />}
+                        </div>
+                        {stats && (
+                            <div className="xp-bar-wrap" style={{ width: '200px', marginBottom: '16px', height: '6px' }}>
+                                <div className="xp-bar-fill" style={{ width: `${stats.progress}%` }}></div>
+                            </div>
+                        )}
                         <div className="user-profile-stats">
                             <div className="user-profile-stat">
                                 <MessageSquare size={16} />

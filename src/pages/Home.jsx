@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Search, Sparkles, TrendingUp, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getTopAnime, searchAnime } from '../services/api'
+import { Search, Sparkles, TrendingUp, ArrowRight, ChevronLeft, ChevronRight, Tags } from 'lucide-react'
+import { getTopAnime, searchAnime, getGenres, getAnimeByGenre } from '../services/api'
 import AnimeCard from '../components/AnimeCard'
 import TopAnimeSlider from '../components/TopAnimeSlider'
+import HeroBanner from '../components/HeroBanner'
 import Loader from '../components/Loader'
 
 const FILTERS = [
@@ -20,14 +21,17 @@ function Home() {
 
     const queryFromUrl = searchParams.get('q') || ''
     const filterFromUrl = searchParams.get('filter') || ''
+    const genreFromUrl = searchParams.get('genre') || ''
     const pageFromUrl = parseInt(searchParams.get('page') || '1', 10)
 
     const [animeList, setAnimeList] = useState([])
+    const [genres, setGenres] = useState([])
     const [pagination, setPagination] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [heroQuery, setHeroQuery] = useState('')
     const [activeFilter, setActiveFilter] = useState(filterFromUrl)
+    const [activeGenre, setActiveGenre] = useState(genreFromUrl)
 
     const isSearchMode = !!queryFromUrl
 
@@ -38,6 +42,8 @@ function Home() {
             let result
             if (queryFromUrl) {
                 result = await searchAnime(queryFromUrl, pageFromUrl)
+            } else if (genreFromUrl) {
+                result = await getAnimeByGenre(genreFromUrl, pageFromUrl)
             } else {
                 result = await getTopAnime(pageFromUrl, activeFilter)
             }
@@ -48,17 +54,23 @@ function Home() {
         } finally {
             setLoading(false)
         }
-    }, [queryFromUrl, pageFromUrl, activeFilter])
+    }, [queryFromUrl, pageFromUrl, activeFilter, genreFromUrl])
 
     useEffect(() => {
         fetchData()
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }, [fetchData])
 
-    // Sync filter from URL
+    // Initial genre fetch
+    useEffect(() => {
+        getGenres().then(setGenres).catch(console.error)
+    }, [])
+
+    // Sync filter and genre from URL
     useEffect(() => {
         setActiveFilter(filterFromUrl)
-    }, [filterFromUrl])
+        setActiveGenre(genreFromUrl)
+    }, [filterFromUrl, genreFromUrl])
 
     const handleHeroSearch = (e) => {
         e.preventDefault()
@@ -70,8 +82,17 @@ function Home() {
 
     const handleFilterChange = (filterValue) => {
         setActiveFilter(filterValue)
+        setActiveGenre('') // Reset genre when filter changes
         const params = {}
         if (filterValue) params.filter = filterValue
+        setSearchParams(params)
+    }
+
+    const handleGenreChange = (genreId) => {
+        setActiveGenre(genreId)
+        setActiveFilter('') // Reset filter when genre changes
+        const params = {}
+        if (genreId) params.genre = genreId
         setSearchParams(params)
     }
 
@@ -79,6 +100,7 @@ function Home() {
         const params = {}
         if (queryFromUrl) params.q = queryFromUrl
         if (activeFilter) params.filter = activeFilter
+        if (activeGenre) params.genre = activeGenre
         if (page > 1) params.page = page
         setSearchParams(params)
     }
@@ -88,9 +110,7 @@ function Home() {
             {/* Hero Section - only on first page with no search */}
             {!isSearchMode && pageFromUrl === 1 && (
                 <section className="hero">
-                    <div className="hero__bg">
-                        <div className="hero__bg-overlay" />
-                    </div>
+                    <HeroBanner />
                     <div className="container">
                         <div className="hero__container">
                             <div className="hero__content">
@@ -164,6 +184,28 @@ function Home() {
                                     {f.label}
                                 </button>
                             ))}
+                        </div>
+                    )}
+
+                    {!isSearchMode && genres.length > 0 && (
+                        <div className="genre-scroller-wrap">
+                            <div className="genre-scroller">
+                                <button
+                                    className={`genre-chip ${!activeGenre ? 'genre-chip--active' : ''}`}
+                                    onClick={() => handleGenreChange('')}
+                                >
+                                    Semua Genre
+                                </button>
+                                {genres.map(g => (
+                                    <button
+                                        key={g.mal_id}
+                                        className={`genre-chip ${activeGenre === String(g.mal_id) ? 'genre-chip--active' : ''}`}
+                                        onClick={() => handleGenreChange(String(g.mal_id))}
+                                    >
+                                        {g.name}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
 

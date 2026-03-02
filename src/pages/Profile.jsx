@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { Camera, User, Mail, Save, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Camera, User, Mail, Save, AlertCircle, CheckCircle2, Loader2, Star } from 'lucide-react'
+import { getUserStats } from '../services/userStats'
+import LevelBadge from '../components/LevelBadge'
 
 function Profile() {
     const { user, updateProfile } = useAuth()
@@ -10,7 +12,14 @@ function Profile() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '')
+    const [stats, setStats] = useState(null)
     const fileInputRef = useRef(null)
+
+    useEffect(() => {
+        if (user) {
+            getUserStats(user.id).then(({ data }) => setStats(data))
+        }
+    }, [user])
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click()
@@ -130,6 +139,28 @@ function Profile() {
                         />
                         <p className="profile-avatar-hint">Klik untuk mengganti foto profil (Maks. 2MB)</p>
                     </div>
+
+                    {stats && (
+                        <div className="xp-section">
+                            <div className="xp-stats">
+                                <div className="xp-info">
+                                    <span className="xp-level">Level {stats.level}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                        <LevelBadge xp={stats.xp} size="lg" />
+                                        <span className="user-profile-username" style={{ fontSize: '1.2rem', margin: 0 }}>{username || 'Otaku'}</span>
+                                    </div>
+                                </div>
+                                <span className="xp-next">{stats.xp} / {stats.nextLevelXP} XP</span>
+                            </div>
+                            <div className="xp-bar-wrap">
+                                <div className="xp-bar-fill" style={{ width: `${stats.progress}%` }}></div>
+                            </div>
+                            <p className="profile-avatar-hint" style={{ marginTop: '8px', textAlign: 'left' }}>
+                                <Star size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                                Tonton lebih banyak anime untuk meningkatkan level kamu!
+                            </p>
+                        </div>
+                    )}
 
                     <form className="profile-form" onSubmit={handleSubmit}>
                         <div className="profile-field">

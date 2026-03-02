@@ -13,6 +13,7 @@ import MyList from './pages/MyList'
 import Profile from './pages/Profile'
 import UserProfile from './pages/UserProfile'
 import History from './pages/History'
+import Genres from './pages/Genres'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="/genres" element={<Genres />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
