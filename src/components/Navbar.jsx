@@ -98,8 +98,10 @@ function Navbar() {
                             </Link>
                         </>
                     )}
+                </div>
 
-                    {/* Auth section */}
+                {/* Auth section - Outside navbar__links for mobile visibility */}
+                <div className="navbar__auth-section">
                     {!loading && (
                         <>
                             {isAuthenticated ? (

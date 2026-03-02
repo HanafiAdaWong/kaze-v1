@@ -49,16 +49,25 @@ function MobileNav() {
                             className={`mobile-nav__link ${isActive('/mylist') ? 'mobile-nav__link--active' : ''}`}
                         >
                             <div className="mobile-nav__icon-wrap">
-                                <Heart size={22} fill={isActive('/mylist') ? 'currentColor' : 'none'} />
+                                <Heart size={20} fill={isActive('/mylist') ? 'currentColor' : 'none'} />
                             </div>
                             <span>List</span>
+                        </Link>
+                        <Link
+                            to="/history"
+                            className={`mobile-nav__link ${isActive('/history') ? 'mobile-nav__link--active' : ''}`}
+                        >
+                            <div className="mobile-nav__icon-wrap">
+                                <Clock size={20} />
+                            </div>
+                            <span>History</span>
                         </Link>
                         <Link
                             to="/profile"
                             className={`mobile-nav__link ${isActive('/profile') ? 'mobile-nav__link--active' : ''}`}
                         >
                             <div className="mobile-nav__icon-wrap">
-                                <User size={22} />
+                                <User size={20} />
                             </div>
                             <span>Profil</span>
                         </Link>
@@ -69,7 +78,7 @@ function MobileNav() {
                         className={`mobile-nav__link ${isActive('/login') ? 'mobile-nav__link--active' : ''}`}
                     >
                         <div className="mobile-nav__icon-wrap">
-                            <User size={22} />
+                            <User size={20} />
                         </div>
                         <span>Masuk</span>
                     </Link>
