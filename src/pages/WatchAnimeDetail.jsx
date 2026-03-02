@@ -4,6 +4,7 @@ import { ArrowLeft, Play, Star, Calendar, Film, Clock, Tv } from 'lucide-react'
 import { getWatchAnimeDetail } from '../services/api'
 import Loader from '../components/Loader'
 import FavoriteButton from '../components/FavoriteButton'
+import { translate } from '../utils/translator'
 
 function WatchAnimeDetail() {
     const { animeId } = useParams()
@@ -11,6 +12,8 @@ function WatchAnimeDetail() {
     const [anime, setAnime] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [translatedSynopsis, setTranslatedSynopsis] = useState('')
+    const [translating, setTranslating] = useState(false)
 
     useEffect(() => {
         let cancelled = false
@@ -19,7 +22,18 @@ function WatchAnimeDetail() {
             setError(null)
             try {
                 const data = await getWatchAnimeDetail(animeId)
-                if (!cancelled) setAnime(data)
+                if (!cancelled) {
+                    setAnime(data)
+                    if (data.synopsis?.paragraphs?.[0]) {
+                        setTranslating(true)
+                        translate(data.synopsis.paragraphs[0]).then(t => {
+                            if (!cancelled) {
+                                setTranslatedSynopsis(t)
+                                setTranslating(false)
+                            }
+                        })
+                    }
+                }
             } catch (err) {
                 if (!cancelled) setError(err.message)
             } finally {
@@ -116,7 +130,7 @@ function WatchAnimeDetail() {
 
                             {anime.synopsis?.paragraphs?.length > 0 && (
                                 <p className="watch-detail-synopsis">
-                                    {anime.synopsis.paragraphs[0]}
+                                    {translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || anime.synopsis.paragraphs[0])}
                                 </p>
                             )}
 

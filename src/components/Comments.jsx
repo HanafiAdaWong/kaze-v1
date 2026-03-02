@@ -1,8 +1,151 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Send, Trash2, User } from 'lucide-react';
+import { MessageSquare, Send, Trash2, User as UserIcon, Reply, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getComments, postComment, deleteComment } from '../services/comments';
+import { getComments, postComment, deleteComment, getReplies } from '../services/comments';
+import { Link } from 'react-router-dom';
 import Loader from './Loader';
+
+function CommentItem({ comment, animeId, user, onCommentDeleted }) {
+    const [replies, setReplies] = useState([]);
+    const [showReplies, setShowReplies] = useState(false);
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyContent, setReplyContent] = useState('');
+    const [submittingReply, setSubmittingReply] = useState(false);
+    const [loadingReplies, setLoadingReplies] = useState(false);
+
+    const fetchReplies = async () => {
+        setLoadingReplies(true);
+        const { data, error } = await getReplies(comment.id);
+        if (!error) {
+            setReplies(data || []);
+        }
+        setLoadingReplies(false);
+    };
+
+    const handleReplySubmit = async (e) => {
+        e.preventDefault();
+        if (!replyContent.trim() || submittingReply) return;
+
+        setSubmittingReply(true);
+        const { data, error } = await postComment(user, animeId, replyContent, comment.id);
+        if (error) {
+            alert('Gagal mengirim balasan: ' + error.message);
+        } else {
+            setReplyContent('');
+            setIsReplying(false);
+            if (!showReplies) setShowReplies(true);
+            fetchReplies();
+        }
+        setSubmittingReply(false);
+    };
+
+    const toggleReplies = () => {
+        if (!showReplies && replies.length === 0) {
+            fetchReplies();
+        }
+        setShowReplies(!showReplies);
+    };
+
+    const handleDelete = async (commentId) => {
+        if (window.confirm('Hapus komentar ini?')) {
+            const { error } = await deleteComment(user, commentId);
+            if (!error) {
+                onCommentDeleted(commentId);
+            }
+        }
+    };
+
+    return (
+        <div className="comment-item-wrap">
+            <div className="comment-item">
+                <div className="comment-item__header">
+                    <div className="comment-item__user">
+                        <Link to={`/user/${comment.user_id}`} className="comment-item__avatar-link">
+                            {comment.avatar_url ? (
+                                <img src={comment.avatar_url} alt={comment.username} className="navbar__avatar" style={{ width: '32px', height: '32px' }} />
+                            ) : (
+                                <div className="navbar__avatar" style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}>
+                                    {comment.username.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </Link>
+                        <Link to={`/user/${comment.user_id}`} className="comment-item__username">
+                            {comment.username}
+                        </Link>
+                        <span className="comment-item__date">
+                            {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
+                    </div>
+                    <div className="comment-item__actions">
+                        {user && (
+                            <button
+                                className="comment-item__reply-btn"
+                                onClick={() => setIsReplying(!isReplying)}
+                                title="Balas"
+                            >
+                                <Reply size={14} />
+                            </button>
+                        )}
+                        {user && user.id === comment.user_id && (
+                            <button
+                                className="comment-item__delete"
+                                onClick={() => handleDelete(comment.id)}
+                                title="Hapus"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+                <p className="comment-item__content">{comment.content}</p>
+
+                {comment.reply_count > 0 && !showReplies && (
+                    <button className="comment-item__view-replies" onClick={toggleReplies}>
+                        <ChevronDown size={14} /> Lihat {comment.reply_count} balasan
+                    </button>
+                )}
+            </div>
+
+            {isReplying && (
+                <form className="comment-form comment-form--reply" onSubmit={handleReplySubmit}>
+                    <div className="comment-form__input-wrap">
+                        <textarea
+                            className="comment-form__input"
+                            placeholder="Tulis balasan kamu..."
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            autoFocus
+                        />
+                        <button type="submit" className="comment-form__submit" disabled={!replyContent.trim() || submittingReply}>
+                            {submittingReply ? <div className="loader loader--small" /> : <Send size={16} />}
+                        </button>
+                    </div>
+                </form>
+            )}
+
+            {showReplies && (
+                <div className="comment-replies">
+                    <button className="comment-item__hide-replies" onClick={() => setShowReplies(false)}>
+                        <ChevronUp size={14} /> Sembunyikan balasan
+                    </button>
+                    {loadingReplies ? (
+                        <div style={{ padding: '10px' }}><Loader text="" /></div>
+                    ) : (
+                        replies.map(reply => (
+                            <CommentItem
+                                key={reply.id}
+                                comment={reply}
+                                animeId={animeId}
+                                user={user}
+                                onCommentDeleted={() => fetchReplies()}
+                            />
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 function Comments({ animeId }) {
     const { user, isAuthenticated } = useAuth();
@@ -10,7 +153,6 @@ function Comments({ animeId }) {
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState(null);
 
     const fetchComments = async () => {
         setLoading(true);
@@ -47,15 +189,6 @@ function Comments({ animeId }) {
         setSubmitting(false);
     };
 
-    const handleDelete = async (commentId) => {
-        if (window.confirm('Hapus komentar ini?')) {
-            const { error } = await deleteComment(user, commentId);
-            if (!error) {
-                setComments(prev => prev.filter(c => c.id !== commentId));
-            }
-        }
-    };
-
     return (
         <div className="comments-section">
             <h3 className="detail__section-title">
@@ -67,11 +200,15 @@ function Comments({ animeId }) {
             <form className="comment-form" onSubmit={handleSubmit}>
                 <div className="comment-form__avatar">
                     {isAuthenticated ? (
-                        <div className="navbar__avatar" style={{ width: '40px', height: '40px' }}>
-                            {(user.user_metadata?.username || user.email).charAt(0).toUpperCase()}
-                        </div>
+                        user.user_metadata?.avatar_url ? (
+                            <img src={user.user_metadata.avatar_url} alt="You" className="navbar__avatar" style={{ width: '40px', height: '40px' }} />
+                        ) : (
+                            <div className="navbar__avatar" style={{ width: '40px', height: '40px' }}>
+                                {(user.user_metadata?.username || user.email).charAt(0).toUpperCase()}
+                            </div>
+                        )
                     ) : (
-                        <div className="comment-form__guest-icon"><User size={20} /></div>
+                        <div className="comment-form__guest-icon"><UserIcon size={20} /></div>
                     )}
                 </div>
                 <div className="comment-form__input-wrap">
@@ -87,7 +224,7 @@ function Comments({ animeId }) {
                         className="comment-form__submit"
                         disabled={!isAuthenticated || !newComment.trim() || submitting}
                     >
-                        {submitting ? <div className="loader" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> : <Send size={18} />}
+                        {submitting ? <div className="loader loader--small" /> : <Send size={18} />}
                     </button>
                 </div>
             </form>
@@ -100,29 +237,13 @@ function Comments({ animeId }) {
             ) : (
                 <div className="comments-list">
                     {comments.map((comment, i) => (
-                        <div key={comment.id} className="comment-item" style={{ animationDelay: `${i * 0.05}s` }}>
-                            <div className="comment-item__header">
-                                <div className="comment-item__user">
-                                    <div className="navbar__avatar" style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}>
-                                        {comment.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="comment-item__username">{comment.username}</span>
-                                    <span className="comment-item__date">
-                                        {new Date(comment.created_at).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                {user && user.id === comment.user_id && (
-                                    <button
-                                        className="comment-item__delete"
-                                        onClick={() => handleDelete(comment.id)}
-                                        title="Hapus komentar"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                )}
-                            </div>
-                            <p className="comment-item__content">{comment.content}</p>
-                        </div>
+                        <CommentItem
+                            key={comment.id}
+                            comment={comment}
+                            animeId={animeId}
+                            user={user}
+                            onCommentDeleted={(id) => setComments(prev => prev.filter(c => c.id !== id))}
+                        />
                     ))}
                 </div>
             )}

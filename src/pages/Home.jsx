@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Search, Sparkles, TrendingUp, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getTopAnime, searchAnime } from '../services/api'
 import AnimeCard from '../components/AnimeCard'
+import TopAnimeSlider from '../components/TopAnimeSlider'
 import Loader from '../components/Loader'
 
 const FILTERS = [
@@ -91,31 +92,40 @@ function Home() {
                         <div className="hero__bg-overlay" />
                     </div>
                     <div className="container">
-                        <div className="hero__content">
-                            <div className="hero__tag">
-                                <Sparkles size={14} />
-                                Temukan Anime Favorit Berikutnya
+                        <div className="hero__container">
+                            <div className="hero__content">
+                                <div className="hero__tag">
+                                    <Sparkles size={14} />
+                                    Temukan Anime Favorit Berikutnya
+                                </div>
+                                <h1 className="hero__title">
+                                    Jelajahi Dunia <span className="gradient-text">Anime</span>
+                                </h1>
+                                <p className="hero__description">
+                                    Telusuri ribuan judul anime, baca sinopsis, cek rating,
+                                    dan temukan serial favoritmu — didukung oleh MyAnimeList.
+                                </p>
+                                <form className="hero__search" onSubmit={handleHeroSearch}>
+                                    <Search className="hero__search-icon" size={20} />
+                                    <input
+                                        type="text"
+                                        className="hero__search-input"
+                                        placeholder="Cari judul anime..."
+                                        value={heroQuery}
+                                        onChange={(e) => setHeroQuery(e.target.value)}
+                                    />
+                                    <button type="submit" className="hero__search-btn">
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </form>
                             </div>
-                            <h1 className="hero__title">
-                                Jelajahi Dunia <span className="gradient-text">Anime</span>
-                            </h1>
-                            <p className="hero__description">
-                                Telusuri ribuan judul anime, baca sinopsis, cek rating,
-                                dan temukan serial favoritmu — didukung oleh MyAnimeList.
-                            </p>
-                            <form className="hero__search" onSubmit={handleHeroSearch}>
-                                <Search className="hero__search-icon" size={20} />
-                                <input
-                                    type="text"
-                                    className="hero__search-input"
-                                    placeholder="Cari judul anime..."
-                                    value={heroQuery}
-                                    onChange={(e) => setHeroQuery(e.target.value)}
-                                />
-                                <button type="submit" className="hero__search-btn">
-                                    <ArrowRight size={18} />
-                                </button>
-                            </form>
+
+                            <div className="hero__slider-wrap">
+                                <h3 className="section-subtitle" style={{ marginBottom: '16px', fontSize: '0.9rem', opacity: 0.8 }}>
+                                    🔥 Anime Terbaik Minggu Ini
+                                </h3>
+                                <TopAnimeSlider />
+                            </div>
                         </div>
                     </div>
                 </section>

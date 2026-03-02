@@ -7,6 +7,7 @@ import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail } from '../services
 import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
+import { translate } from '../utils/translator'
 
 function EpisodePlayer() {
     const { animeId, episodeId } = useParams()
@@ -20,6 +21,8 @@ function EpisodePlayer() {
     const [playerLoading, setPlayerLoading] = useState(false)
     const [error, setError] = useState(null)
     const [serverError, setServerError] = useState(null)
+    const [translatedSynopsis, setTranslatedSynopsis] = useState('')
+    const [translating, setTranslating] = useState(false)
 
     // Fetch episode detail
     useEffect(() => {
@@ -40,6 +43,17 @@ function EpisodePlayer() {
                 if (cancelled) return
                 setEpisode(data)
                 setAnimeDetail(detail)
+
+                // Translate synopsis
+                if (data.synopsis?.paragraphs?.[0]) {
+                    setTranslating(true)
+                    translate(data.synopsis.paragraphs[0]).then(t => {
+                        if (!cancelled) {
+                            setTranslatedSynopsis(t)
+                            setTranslating(false)
+                        }
+                    })
+                }
 
                 // Save to history
                 if (detail) {
@@ -273,8 +287,10 @@ function EpisodePlayer() {
                 {/* Episode Info */}
                 {episode.synopsis?.paragraphs?.length > 0 && (
                     <div className="player-synopsis">
-                        <h3 className="detail__section-title">Sinopsis</h3>
-                        <p className="detail__synopsis">{episode.synopsis.paragraphs[0]}</p>
+                        <h3 className="detail__section-title">Sinopsis (Indonesia)</h3>
+                        <p className="detail__synopsis">
+                            {translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || episode.synopsis.paragraphs[0])}
+                        </p>
                     </div>
                 )}
 

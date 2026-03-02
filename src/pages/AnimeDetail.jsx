@@ -9,6 +9,7 @@ import AnimeCard from '../components/AnimeCard'
 import Loader from '../components/Loader'
 import FavoriteButton from '../components/FavoriteButton'
 import Comments from '../components/Comments'
+import { translate } from '../utils/translator'
 
 function AnimeDetail() {
     const { id } = useParams()
@@ -19,6 +20,8 @@ function AnimeDetail() {
     const [recommendations, setRecommendations] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [translatedSynopsis, setTranslatedSynopsis] = useState('')
+    const [translating, setTranslating] = useState(false)
 
     useEffect(() => {
         let cancelled = false
@@ -30,6 +33,17 @@ function AnimeDetail() {
                 const data = await getAnimeById(id)
                 if (cancelled) return
                 setAnime(data)
+
+                // Start translation immediately
+                if (data.synopsis) {
+                    setTranslating(true)
+                    translate(data.synopsis).then(t => {
+                        if (!cancelled) {
+                            setTranslatedSynopsis(t)
+                            setTranslating(false)
+                        }
+                    })
+                }
 
                 // Fetch characters with a small delay to avoid rate limit
                 setTimeout(async () => {
@@ -202,9 +216,11 @@ function AnimeDetail() {
                             {anime.synopsis && (
                                 <div className="detail__section">
                                     <h2 className="detail__section-title">
-                                        <BookOpen size={18} /> Sinopsis
+                                        <BookOpen size={18} /> Sinopsis (Indonesia)
                                     </h2>
-                                    <p className="detail__synopsis">{anime.synopsis}</p>
+                                    <p className="detail__synopsis">
+                                        {translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || anime.synopsis)}
+                                    </p>
                                     <div style={{ marginTop: '20px' }}>
                                         <Link
                                             to={`/watch?q=${encodeURIComponent(anime.title)}`}
