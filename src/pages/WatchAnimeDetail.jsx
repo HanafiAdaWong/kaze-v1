@@ -10,6 +10,8 @@ function WatchAnimeDetail() {
     const { animeId } = useParams()
     const navigate = useNavigate()
     const [anime, setAnime] = useState(null)
+    const [pagination, setPagination] = useState(null)
+    const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [translatedSynopsis, setTranslatedSynopsis] = useState('')
@@ -21,9 +23,12 @@ function WatchAnimeDetail() {
             setLoading(true)
             setError(null)
             try {
-                const data = await getWatchAnimeDetail(animeId)
+                const response = await getWatchAnimeDetail(animeId, page)
                 if (!cancelled) {
+                    const data = response.data
                     setAnime(data)
+                    setPagination(response.pagination)
+
                     if (data.synopsis?.paragraphs?.[0]) {
                         setTranslating(true)
                         translate(data.synopsis.paragraphs[0]).then(t => {
@@ -43,7 +48,7 @@ function WatchAnimeDetail() {
         fetchData()
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return () => { cancelled = true }
-    }, [animeId])
+    }, [animeId, page])
 
     if (loading) {
         return (
@@ -54,12 +59,26 @@ function WatchAnimeDetail() {
     }
 
     if (error || !anime) {
+        const is404 = error?.includes('404') || error?.includes('tidak ditemukan');
+
         return (
             <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh' }}>
                 <div className="error-container">
                     <div className="error-container__title">Gagal memuat anime</div>
                     <p className="error-container__message">{error || 'Data tidak ditemukan.'}</p>
-                    <button className="error-container__btn" onClick={() => navigate('/watch')}>Kembali</button>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button className="error-container__btn" onClick={() => navigate('/watch')}>
+                            Kembali ke Daftar
+                        </button>
+                        {is404 && (
+                            <button
+                                className="error-container__btn error-container__btn--secondary"
+                                onClick={() => navigate(`/watch?q=${encodeURIComponent(animeId.replace(/-/g, ' '))}`)}
+                            >
+                                Cari Manual di Server
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         )
@@ -149,7 +168,7 @@ function WatchAnimeDetail() {
                                     className="detail__btn detail__btn--primary"
                                     style={{ marginTop: '20px', display: 'inline-flex' }}
                                 >
-                                    <Play size={16} /> Tonton Episode 1
+                                    <Play size={16} /> {page === pagination?.totalPages || !pagination?.totalPages ? 'Tonton Episode 1' : 'Tonton Episode Terlama di Halaman Ini'}
                                 </Link>
                             )}
                             <div style={{ marginTop: '16px' }}>
@@ -189,6 +208,29 @@ function WatchAnimeDetail() {
                                 </div>
                             </Link>
                         ))}
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && (
+                    <div className="pagination" style={{ marginTop: '40px' }}>
+                        <button
+                            className="pagination__btn"
+                            disabled={page === 1}
+                            onClick={() => setPage(p => p - 1)}
+                        >
+                            <ArrowLeft size={16} /> Sebanyaknya
+                        </button>
+                        <div className="pagination__info">
+                            Halaman {page} dari {pagination.totalPages}
+                        </div>
+                        <button
+                            className="pagination__btn"
+                            disabled={page === pagination.totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                        >
+                            Selanjutnya <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
+                        </button>
                     </div>
                 )}
 

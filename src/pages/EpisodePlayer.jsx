@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2
 } from 'lucide-react'
-import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail } from '../services/api'
+import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getAnimasuEpisodeDetail, getZoronimeEpisodeDetail, getAnoboyEpisodeDetail } from '../services/api'
 import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
@@ -26,6 +26,58 @@ function EpisodePlayer() {
     const [serverError, setServerError] = useState(null)
     const [translatedSynopsis, setTranslatedSynopsis] = useState('')
     const [translating, setTranslating] = useState(false)
+    const [isBypass, setIsBypass] = useState(false)
+
+    const handleBypass = async (source) => {
+        setLoading(true)
+        setError(null)
+        setStreamUrl(null)
+        setActiveServer(null)
+        try {
+            let data
+            let bypassSlug = episodeId
+
+            if (source === 'animasu' && !bypassSlug.startsWith('nonton-')) {
+                bypassSlug = `nonton - ${bypassSlug} `
+            }
+
+            if (source === 'anoboy') {
+                // Anoboy often uses '...subtitle-indonesia' suffix
+                if (!bypassSlug.includes('subtitle-indonesia')) {
+                    bypassSlug = `${bypassSlug} -subtitle - indonesia`
+                }
+                data = await getAnoboyEpisodeDetail(bypassSlug)
+            } else if (source === 'animasu') {
+                data = await getAnimasuEpisodeDetail(bypassSlug)
+            } else if (source === 'zoronime') {
+                data = await getZoronimeEpisodeDetail(bypassSlug)
+            }
+
+            if (!data || (!data.streams && !data.data)) {
+                throw new Error('Data tidak lengkap dari server ini.')
+            }
+
+            const finalData = data.data || data
+            setEpisode({
+                ...finalData,
+                source: source.charAt(0).toUpperCase() + source.slice(1),
+                title: finalData.title || episode?.title || `Episode ${episodeId} `
+            })
+            setIsBypass(true)
+
+            // Auto-load first stream if available
+            const streams = finalData.streams || []
+            if (streams.length > 0) {
+                setStreamUrl(streams[0].url)
+                setActiveServer('bypass-0')
+            }
+        } catch (err) {
+            setError(`Server ${source} gagal: ${err.message} `)
+        } finally {
+            setLoading(false)
+        }
+    }
+
 
     // Fetch episode detail
     useEffect(() => {
@@ -64,7 +116,7 @@ function EpisodePlayer() {
                         animeId,
                         episodeId,
                         title: detail.english || detail.synonyms || detail.title || animeId,
-                        episodeTitle: data.title || `Episode ${episodeId}`,
+                        episodeTitle: data.title || `Episode ${episodeId} `,
                         poster: detail.poster,
                         timestamp: Date.now()
                     })
@@ -158,14 +210,49 @@ function EpisodePlayer() {
     }
 
     if (error || !episode) {
+        const is404 = error?.includes('404') || error?.includes('tidak ditemukan');
+
         return (
             <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh' }}>
                 <div className="error-container">
                     <div className="error-container__title">Gagal memuat episode</div>
                     <p className="error-container__message">{error || 'Episode tidak ditemukan.'}</p>
-                    <button className="error-container__btn" onClick={() => navigate(`/watch/${animeId}`)}>
-                        Kembali ke Anime
-                    </button>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button className="error-container__btn" onClick={() => navigate(`/watch/${animeId}`)}>
+                            Kembali ke Daftar Episode
+                        </button>
+                        {is404 && (
+                            <>
+                                <button
+                                    className="error-container__btn error-container__btn--secondary"
+                                    onClick={() => navigate(`/watch?q=${encodeURIComponent(animeId.replace(/-/g, ' '))}`)}
+                                >
+                                    Cari Manual di Server
+                                </button>
+                                <button
+                                    className="error-container__btn"
+                                    style={{ background: 'var(--accent-primary)', border: 'none' }}
+                                    onClick={() => handleBypass('animasu')}
+                                >
+                                    Gunakan Server Animasu
+                                </button>
+                                <button
+                                    className="error-container__btn"
+                                    style={{ background: '#3b82f6', border: 'none' }}
+                                    onClick={() => handleBypass('zoronime')}
+                                >
+                                    Gunakan Server Zoronime
+                                </button>
+                                <button
+                                    className="error-container__btn"
+                                    style={{ background: '#f59e0b', border: 'none' }}
+                                    onClick={() => handleBypass('anoboy')}
+                                >
+                                    Gunakan Server Anoboy
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         )
@@ -178,7 +265,7 @@ function EpisodePlayer() {
             <div className="container">
                 {/* Header */}
                 <div className="player-header">
-                    <Link to={`/watch/${animeId}`} className="watch-back-btn">
+                    <Link to={`/ watch / ${animeId} `} className="watch-back-btn">
                         <ArrowLeft size={16} /> Kembali
                     </Link>
                     <h1 className="player-title">{episode.title}</h1>
@@ -222,7 +309,7 @@ function EpisodePlayer() {
                         <div className="player-controls__nav">
                             {episode.hasPrevEpisode && episode.prevEpisode && (
                                 <Link
-                                    to={`/watch/${animeId}/episode/${episode.prevEpisode.episodeId}`}
+                                    to={`/ watch / ${animeId} /episode/${episode.prevEpisode.episodeId} `}
                                     className="player-nav-btn"
                                 >
                                     <ChevronLeft size={16} /> Sebelumnya
@@ -230,7 +317,7 @@ function EpisodePlayer() {
                             )}
                             {episode.hasNextEpisode && episode.nextEpisode && (
                                 <Link
-                                    to={`/watch/${animeId}/episode/${episode.nextEpisode.episodeId}`}
+                                    to={`/ watch / ${animeId} /episode/${episode.nextEpisode.episodeId} `}
                                     className="player-nav-btn"
                                 >
                                     Selanjutnya <ChevronRight size={16} />
@@ -249,10 +336,27 @@ function EpisodePlayer() {
                         <Monitor size={18} /> Pilih Server
                     </h3>
 
-                    {serverError && (
-                        <p style={{ color: 'var(--warning)', fontSize: '0.85rem', marginBottom: '12px' }}>
-                            ⚠️ {serverError}
-                        </p>
+                    {/* Alternative Bypass Streams (Animasu style) */}
+                    {episode.streams && episode.streams.length > 0 && (
+                        <div className="server-quality">
+                            <div className="server-quality__label">Alternatif ({episode.source || 'Bypass'})</div>
+                            <div className="server-quality__list">
+                                {episode.streams.map((stream, i) => (
+                                    <button
+                                        key={i}
+                                        className={`server - btn ${activeServer === `bypass-${i}` ? 'server-btn--active' : ''} `}
+                                        onClick={() => {
+                                            setStreamUrl(stream.url)
+                                            setActiveServer(`bypass - ${i} `)
+                                            setServerError(null)
+                                        }}
+                                        disabled={playerLoading}
+                                    >
+                                        {stream.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     )}
 
                     {/* Default server */}
@@ -261,7 +365,7 @@ function EpisodePlayer() {
                             <div className="server-quality__label">Default</div>
                             <div className="server-quality__list">
                                 <button
-                                    className={`server-btn ${activeServer === 'default' ? 'server-btn--active' : ''}`}
+                                    className={`server - btn ${activeServer === 'default' ? 'server-btn--active' : ''} `}
                                     onClick={() => handleServerClick('default', 'default')}
                                     disabled={playerLoading}
                                 >
@@ -280,7 +384,7 @@ function EpisodePlayer() {
                                 {q.serverList.map((s) => (
                                     <button
                                         key={s.serverId}
-                                        className={`server-btn ${activeServer === s.serverId ? 'server-btn--active' : ''}`}
+                                        className={`server - btn ${activeServer === s.serverId ? 'server-btn--active' : ''} `}
                                         onClick={() => handleServerClick(s.serverId, q.title)}
                                         disabled={playerLoading}
                                     >

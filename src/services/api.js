@@ -1,5 +1,4 @@
 const JIKAN_BASE = 'https://api.jikan.moe/v4';
-const SANKA_BASE = 'https://www.sankavollerei.com/anime/samehadaku';
 
 // ============================================
 // CACHE SYSTEM — Simpan respons agar tidak request ulang
@@ -107,31 +106,43 @@ async function fetchJikan(endpoint) {
     return json;
 }
 
-async function fetchSanka(endpoint, cacheTtlKey = 'detail') {
-    const cacheKey = `sanka:${endpoint}`;
+async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku') {
+    const baseUrl = `https://www.sankavollerei.com/anime/${source}`;
+    const cacheKey = `sanka:${source}:${endpoint}`;
     const cached = getCached(cacheKey);
     if (cached) return cached;
 
-    // Dedupe: jika request yang sama sedang berjalan, tunggu hasilnya
     if (pendingRequests.has(cacheKey)) {
         return pendingRequests.get(cacheKey);
     }
 
     const promise = (async () => {
-        // Tunggu slot rate limiter
         await sankaRateLimiter.waitForSlot();
 
-        const res = await fetchWithTimeout(`${SANKA_BASE}${endpoint}`, 20000);
+        const res = await fetchWithTimeout(`${baseUrl}${endpoint}`, 20000);
 
         if (res.status === 429) {
             throw new Error('Rate limit tercapai. Tunggu sebentar lalu coba lagi.');
         }
-        if (!res.ok) throw new Error(`Server streaming error: ${res.status}`);
+
+        // We handle !res.ok carefully because we want the JSON error message if available
+        if (!res.ok && res.status !== 404) {
+            throw new Error(`Server streaming error: ${res.status}`);
+        }
 
         const json = await res.json();
+
+        // Handle 404 Not Found or "Success but actually an error" (e.g., 522 timeout)
+        if (json.statusCode === 404 || (json.status === 'success' && json.data === null && !json.streams)) {
+            if (json.error || (json.message && json.message.includes('Error fetching'))) {
+                throw new Error(json.error || json.message || 'Server sumber sedang mengalami gangguan (Timeout).');
+            }
+            throw new Error('Data tidak ditemukan (404). Anime atau episode ini mungkin belum tersedia.');
+        }
+
         if (json.status !== 'success') throw new Error(json.message || 'Gagal memuat data');
 
-        // Cache hasilnya
+        // Cache results
         setCache(cacheKey, json, CACHE_TTL[cacheTtlKey] || CACHE_TTL.detail);
         return json;
     })();
@@ -255,15 +266,34 @@ export async function searchWatchAnime(query) {
 }
 
 /** Get anime detail (episodes list) */
-export async function getWatchAnimeDetail(animeId) {
-    const json = await fetchSanka(`/anime/${animeId}`, 'detail');
-    return json.data;
+export async function getWatchAnimeDetail(animeId, page = 1) {
+    const json = await fetchSanka(`/anime/${animeId}${page > 1 ? `?page=${page}` : ''}`, 'detail');
+    return json;
 }
 
 /** Get episode detail (server list) */
 export async function getEpisodeDetail(episodeId) {
     const json = await fetchSanka(`/episode/${episodeId}`, 'episode');
     return json.data;
+}
+
+/** [BYPASS] Get episode from Zoronime specifically */
+export async function getZoronimeEpisodeDetail(slug) {
+    const json = await fetchSanka(`/episode/${slug}`, 'episode', 'zoronime');
+    return json;
+}
+
+/** [BYPASS] Get episode from Animasu specifically */
+export async function getAnimasuEpisodeDetail(slug) {
+    const json = await fetchSanka(`/episode/${slug}`, 'episode', 'animasu');
+    // Animasu structure has streams at top level, not inside data
+    return json;
+}
+
+/** [BYPASS] Get episode from Anoboy specifically */
+export async function getAnoboyEpisodeDetail(slug) {
+    const json = await fetchSanka(`/episode/${slug}`, 'episode', 'anoboy');
+    return json;
 }
 
 /** Get streaming URL from server */
