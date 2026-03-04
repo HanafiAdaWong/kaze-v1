@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, Play, TrendingUp, Clock, Flame, ChevronRight } from 'lucide-react'
+import { Search, Play, TrendingUp, Clock, Flame } from 'lucide-react'
 import { getWatchHome, searchWatchAnime } from '../services/api'
 import Loader from '../components/Loader'
 
 function WatchCard({ anime }) {
     return (
-        <Link to={`/watch/${anime.animeId}`} className="anime-card">
+        <Link to={`/watch/${anime.animeId || anime.id || anime.slug}`} className="anime-card">
             <div className="anime-card__image-wrap">
                 <img
                     className="anime-card__image"
-                    src={anime.poster}
+                    src={anime.poster || anime.image || anime.img}
                     alt={anime.title}
                     loading="lazy"
                 />
@@ -131,7 +131,7 @@ function Watch() {
                         </h2>
                         {searchResults.animeList?.length > 0 ? (
                             <div className="anime-grid">
-                                {searchResults.animeList.map((anime, i) => (
+                                {searchResults.animeList.map((anime) => (
                                     <WatchCard key={anime.animeId} anime={anime} />
                                 ))}
                             </div>
@@ -157,7 +157,7 @@ function Watch() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.recent.animeList.slice(0, 12).map((anime) => (
+                                    {homeData.recent.animeList?.slice(0, 12).map((anime) => (
                                         <WatchCard key={anime.animeId} anime={anime} />
                                     ))}
                                 </div>
@@ -174,7 +174,7 @@ function Watch() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.popular.animeList.slice(0, 12).map((anime) => (
+                                    {homeData.popular.animeList?.slice(0, 12).map((anime) => (
                                         <WatchCard key={anime.animeId} anime={anime} />
                                     ))}
                                 </div>
@@ -191,12 +191,32 @@ function Watch() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.ongoing.animeList.slice(0, 12).map((anime) => (
+                                    {homeData.ongoing.animeList?.slice(0, 12).map((anime) => (
                                         <WatchCard key={anime.animeId} anime={anime} />
                                     ))}
                                 </div>
                             </section>
                         )}
+
+                        {/* No Data Fallback */}
+                        {!homeData.recent?.animeList?.length &&
+                            !homeData.popular?.animeList?.length &&
+                            !homeData.ongoing?.animeList?.length && (
+                                <div className="error-container" style={{ minHeight: '300px' }}>
+                                    <div className="error-container__title">Data tidak tersedia</div>
+                                    <p className="error-container__message">Gagal mengambil daftar anime dari server streaming.</p>
+                                    <form className="watch-search" onSubmit={handleSearch} style={{ marginTop: '20px', maxWidth: '400px', marginInline: 'auto' }}>
+                                        <input
+                                            type="text"
+                                            className="watch-search__input"
+                                            placeholder="Cari manual saja..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                        <button type="submit" className="watch-search__btn">Cari</button>
+                                    </form>
+                                </div>
+                            )}
                     </div>
                 )}
             </div>

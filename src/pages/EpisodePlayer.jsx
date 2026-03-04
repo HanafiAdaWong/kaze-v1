@@ -38,13 +38,13 @@ function EpisodePlayer() {
             let bypassSlug = episodeId
 
             if (source === 'animasu' && !bypassSlug.startsWith('nonton-')) {
-                bypassSlug = `nonton - ${bypassSlug} `
+                bypassSlug = `nonton-${bypassSlug}`
             }
 
             if (source === 'anoboy') {
                 // Anoboy often uses '...subtitle-indonesia' suffix
                 if (!bypassSlug.includes('subtitle-indonesia')) {
-                    bypassSlug = `${bypassSlug} -subtitle - indonesia`
+                    bypassSlug = `${bypassSlug}-subtitle-indonesia`
                 }
                 data = await getAnoboyEpisodeDetail(bypassSlug)
             } else if (source === 'animasu') {
@@ -61,7 +61,7 @@ function EpisodePlayer() {
             setEpisode({
                 ...finalData,
                 source: source.charAt(0).toUpperCase() + source.slice(1),
-                title: finalData.title || episode?.title || `Episode ${episodeId} `
+                title: finalData.title || episode?.title || `Episode ${episodeId}`
             })
             setIsBypass(true)
 
@@ -72,7 +72,7 @@ function EpisodePlayer() {
                 setActiveServer('bypass-0')
             }
         } catch (err) {
-            setError(`Server ${source} gagal: ${err.message} `)
+            setError(`Server ${source} gagal: ${err.message}`)
         } finally {
             setLoading(false)
         }
@@ -116,7 +116,7 @@ function EpisodePlayer() {
                         animeId,
                         episodeId,
                         title: detail.english || detail.synonyms || detail.title || animeId,
-                        episodeTitle: data.title || `Episode ${episodeId} `,
+                        episodeTitle: data.title || `Episode ${episodeId}`,
                         poster: detail.poster,
                         timestamp: Date.now()
                     })
@@ -265,7 +265,7 @@ function EpisodePlayer() {
             <div className="container">
                 {/* Header */}
                 <div className="player-header">
-                    <Link to={`/ watch / ${animeId} `} className="watch-back-btn">
+                    <Link to={`/watch/${animeId}`} className="watch-back-btn">
                         <ArrowLeft size={16} /> Kembali
                     </Link>
                     <h1 className="player-title">{episode.title}</h1>
@@ -309,7 +309,7 @@ function EpisodePlayer() {
                         <div className="player-controls__nav">
                             {episode.hasPrevEpisode && episode.prevEpisode && (
                                 <Link
-                                    to={`/ watch / ${animeId} /episode/${episode.prevEpisode.episodeId} `}
+                                    to={`/watch/${animeId}/episode/${episode.prevEpisode.episodeId}`}
                                     className="player-nav-btn"
                                 >
                                     <ChevronLeft size={16} /> Sebelumnya
@@ -317,7 +317,7 @@ function EpisodePlayer() {
                             )}
                             {episode.hasNextEpisode && episode.nextEpisode && (
                                 <Link
-                                    to={`/ watch / ${animeId} /episode/${episode.nextEpisode.episodeId} `}
+                                    to={`/watch/${animeId}/episode/${episode.nextEpisode.episodeId}`}
                                     className="player-nav-btn"
                                 >
                                     Selanjutnya <ChevronRight size={16} />
@@ -344,10 +344,10 @@ function EpisodePlayer() {
                                 {episode.streams.map((stream, i) => (
                                     <button
                                         key={i}
-                                        className={`server - btn ${activeServer === `bypass-${i}` ? 'server-btn--active' : ''} `}
+                                        className={`server-btn ${activeServer === `bypass-${i}` ? 'server-btn--active' : ''}`}
                                         onClick={() => {
                                             setStreamUrl(stream.url)
-                                            setActiveServer(`bypass - ${i} `)
+                                            setActiveServer(`bypass-${i}`)
                                             setServerError(null)
                                         }}
                                         disabled={playerLoading}
@@ -365,7 +365,7 @@ function EpisodePlayer() {
                             <div className="server-quality__label">Default</div>
                             <div className="server-quality__list">
                                 <button
-                                    className={`server - btn ${activeServer === 'default' ? 'server-btn--active' : ''} `}
+                                    className={`server-btn ${activeServer === 'default' ? 'server-btn--active' : ''}`}
                                     onClick={() => handleServerClick('default', 'default')}
                                     disabled={playerLoading}
                                 >
@@ -384,7 +384,7 @@ function EpisodePlayer() {
                                 {q.serverList.map((s) => (
                                     <button
                                         key={s.serverId}
-                                        className={`server - btn ${activeServer === s.serverId ? 'server-btn--active' : ''} `}
+                                        className={`server-btn ${activeServer === s.serverId ? 'server-btn--active' : ''}`}
                                         onClick={() => handleServerClick(s.serverId, q.title)}
                                         disabled={playerLoading}
                                     >
