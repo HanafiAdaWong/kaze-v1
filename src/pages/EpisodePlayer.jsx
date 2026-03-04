@@ -111,13 +111,14 @@ function EpisodePlayer() {
                 }
 
                 // Save to history
-                if (detail) {
+                if (detail?.data) {
+                    const anime = detail.data;
                     addToHistory({
                         animeId,
                         episodeId,
-                        title: detail.english || detail.synonyms || detail.title || animeId,
+                        title: anime.english || anime.synonyms || anime.title || animeId,
                         episodeTitle: data.title || `Episode ${episodeId}`,
-                        poster: detail.poster,
+                        poster: anime.poster || anime.image || anime.img,
                         timestamp: Date.now()
                     })
                 }
