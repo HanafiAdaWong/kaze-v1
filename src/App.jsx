@@ -15,6 +15,7 @@ import Profile from './pages/Profile'
 import UserProfile from './pages/UserProfile'
 import History from './pages/History'
 import Genres from './pages/Genres'
+import BatchDetail from './pages/BatchDetail'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
                         }
                     />
                     <Route path="/genres" element={<Genres />} />
+                    <Route path="/batch/:batchId" element={<BatchDetail />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>

@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2
 } from 'lucide-react'
-import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getAnimasuEpisodeDetail, getZoronimeEpisodeDetail, getAnoboyEpisodeDetail } from '../services/api'
+import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getAnimasuEpisodeDetail, getZoronimeEpisodeDetail, getAnoboyEpisodeDetail, getSamehadakuEpisodeDetail } from '../services/api'
 import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
@@ -51,6 +51,8 @@ function EpisodePlayer() {
                 data = await getAnimasuEpisodeDetail(bypassSlug)
             } else if (source === 'zoronime') {
                 data = await getZoronimeEpisodeDetail(bypassSlug)
+            } else if (source === 'samehadaku') {
+                data = await getSamehadakuEpisodeDetail(bypassSlug)
             }
 
             if (!data || (!data.streams && !data.data)) {
@@ -229,6 +231,13 @@ function EpisodePlayer() {
                                     onClick={() => navigate(`/watch?q=${encodeURIComponent(animeId.replace(/-/g, ' '))}`)}
                                 >
                                     Cari Manual di Server
+                                </button>
+                                <button
+                                    className="error-container__btn"
+                                    style={{ background: '#22c55e', border: 'none' }}
+                                    onClick={() => handleBypass('samehadaku')}
+                                >
+                                    Gunakan Server Samehadaku
                                 </button>
                                 <button
                                     className="error-container__btn"

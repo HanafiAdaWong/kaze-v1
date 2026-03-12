@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, Play, TrendingUp, Clock, Flame } from 'lucide-react'
+import { Search, Play, TrendingUp, Clock, CheckCircle } from 'lucide-react'
 import { getWatchHome, searchWatchAnime } from '../services/api'
 import Loader from '../components/Loader'
 
@@ -129,58 +129,27 @@ function Watch() {
                         <h2 className="section-title">
                             Hasil pencarian: <span className="accent">"{queryFromUrl}"</span>
                         </h2>
-                        {searchResults.animeList?.length > 0 ? (
-                            <div className="anime-grid">
-                                {searchResults.animeList.map((anime) => (
-                                    <WatchCard key={anime.animeId} anime={anime} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="error-container">
-                                <div className="error-container__title">Tidak ditemukan</div>
-                                <p className="error-container__message">Coba kata kunci lain.</p>
-                            </div>
-                        )}
+                        {(() => {
+                            const list = searchResults.animeList || (Array.isArray(searchResults) ? searchResults : []);
+                            return list.length > 0 ? (
+                                <div className="anime-grid">
+                                    {list.map((anime) => (
+                                        <WatchCard key={anime.animeId || anime.id || anime.slug} anime={anime} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="error-container">
+                                    <div className="error-container__title">Tidak ditemukan</div>
+                                    <p className="error-container__message">Coba kata kunci lain.</p>
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
 
-                {/* Home Data */}
+                {/* Home Data (Otakudesu: ongoing + completed) */}
                 {!loading && !error && !isSearchMode && homeData && (
                     <div>
-                        {/* Recent Releases */}
-                        {homeData.recent?.animeList?.length > 0 && (
-                            <section className="watch-section">
-                                <div className="watch-section__header">
-                                    <h2 className="section-title">
-                                        <Clock size={20} />
-                                        <span>Baru <span className="accent">Rilis</span></span>
-                                    </h2>
-                                </div>
-                                <div className="anime-grid">
-                                    {homeData.recent.animeList?.slice(0, 12).map((anime) => (
-                                        <WatchCard key={anime.animeId} anime={anime} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Popular */}
-                        {homeData.popular?.animeList?.length > 0 && (
-                            <section className="watch-section">
-                                <div className="watch-section__header">
-                                    <h2 className="section-title">
-                                        <Flame size={20} />
-                                        <span>Paling <span className="accent">Populer</span></span>
-                                    </h2>
-                                </div>
-                                <div className="anime-grid">
-                                    {homeData.popular.animeList?.slice(0, 12).map((anime) => (
-                                        <WatchCard key={anime.animeId} anime={anime} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
                         {/* Ongoing */}
                         {homeData.ongoing?.animeList?.length > 0 && (
                             <section className="watch-section">
@@ -191,7 +160,24 @@ function Watch() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.ongoing.animeList?.slice(0, 12).map((anime) => (
+                                    {homeData.ongoing.animeList.map((anime) => (
+                                        <WatchCard key={anime.animeId} anime={anime} />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Completed */}
+                        {homeData.completed?.animeList?.length > 0 && (
+                            <section className="watch-section">
+                                <div className="watch-section__header">
+                                    <h2 className="section-title">
+                                        <CheckCircle size={20} />
+                                        <span>Selesai <span className="accent">Tayang</span></span>
+                                    </h2>
+                                </div>
+                                <div className="anime-grid">
+                                    {homeData.completed.animeList.map((anime) => (
                                         <WatchCard key={anime.animeId} anime={anime} />
                                     ))}
                                 </div>
@@ -199,9 +185,8 @@ function Watch() {
                         )}
 
                         {/* No Data Fallback */}
-                        {!homeData.recent?.animeList?.length &&
-                            !homeData.popular?.animeList?.length &&
-                            !homeData.ongoing?.animeList?.length && (
+                        {!homeData.ongoing?.animeList?.length &&
+                            !homeData.completed?.animeList?.length && (
                                 <div className="error-container" style={{ minHeight: '300px' }}>
                                     <div className="error-container__title">Data tidak tersedia</div>
                                     <p className="error-container__message">Gagal mengambil daftar anime dari server streaming.</p>

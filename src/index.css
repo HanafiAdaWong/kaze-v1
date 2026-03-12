@@ -931,7 +931,7 @@ ol {
 
 .hero {
   position: relative;
-  min-height: 520px;
+  min-height: 380px;
   display: flex;
   align-items: center;
   padding-top: var(--navbar-height);
@@ -996,9 +996,9 @@ ol {
 .hero__container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xl);
-  min-height: 600px;
-  padding: var(--space-xl) 0;
+  gap: var(--space-md);
+  min-height: 400px;
+  padding: 0;
 }
 
 .hero__content {
@@ -1007,7 +1007,7 @@ ol {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
-  padding: var(--space-2xl) 0;
+  padding: var(--space-md) 0;
 }
 
 .hero__search {
@@ -1150,11 +1150,7 @@ ol {
   display: flex;
   width: max-content;
   gap: var(--space-md);
-  animation: scroll 30s linear infinite;
-}
-
-.top-slider:hover .top-slider__track {
-  animation-play-state: paused;
+  pointer-events: auto;
 }
 
 @keyframes scroll {
@@ -2129,15 +2125,17 @@ ol {
 
 .episode-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
   gap: var(--space-sm);
 }
 
 .episode-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  justify-content: center;
+  aspect-ratio: 1/1;
+  padding: var(--space-xs);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -2147,35 +2145,47 @@ ol {
 }
 
 .episode-card:hover {
-  border-color: var(--border-glow);
+  border-color: var(--accent-primary);
   background: var(--bg-glass-hover);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-sm), var(--shadow-glow);
+  box-shadow: 0 4px 12px rgba(255, 60, 115, 0.2);
 }
 
 .episode-card__number {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-gradient-subtle);
+  display: none;
+  /* Hidden since we'll show numbers in the middle */
+}
+
+.episode-card__info {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-primary);
-  flex-shrink: 0;
-}
-
-.episode-card:hover .episode-card__number {
-  background: var(--accent-gradient);
-  color: white;
 }
 
 .episode-card__title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.episode-card:hover .episode-card__title {
+  color: var(--accent-primary);
+}
+
+@media (max-width: 480px) {
+  .episode-grid {
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 8px;
+  }
+
+  .episode-card__title {
+    font-size: 0.9rem;
+  }
+
+  .episode-card {
+    border-radius: var(--radius-sm);
+  }
 }
 
 /* ============================================
@@ -3858,4 +3868,91 @@ ol {
   .genres-search {
     max-width: 100%;
   }
+}
+
+/* ============================================
+   BATCH DOWNLOAD PAGE
+   ============================================ */
+
+.batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.batch-format-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  overflow: hidden;
+}
+
+.batch-format-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--bg-glass);
+}
+
+.batch-qualities {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.batch-quality-item {
+  background: var(--bg-glass);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.batch-quality-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.batch-size-tag {
+  background: var(--bg-glass-heavy);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 8px;
+}
+
+.batch-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.batch-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.batch-link-btn:hover {
+  background: var(--accent-gradient-subtle);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
 }

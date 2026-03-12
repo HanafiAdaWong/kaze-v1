@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Star, Calendar, Film, Clock, Tv } from 'lucide-react'
+import { ArrowLeft, Play, Star, Calendar, Film, Clock, Tv, Download } from 'lucide-react'
 import { getWatchAnimeDetail } from '../services/api'
 import Loader from '../components/Loader'
 import FavoriteButton from '../components/FavoriteButton'
@@ -161,16 +161,26 @@ function WatchAnimeDetail() {
                                 </div>
                             )}
 
-                            {/* Quick play first episode */}
-                            {episodeList.length > 0 && (
-                                <Link
-                                    to={`/watch/${animeId}/episode/${episodeList[episodeList.length - 1].episodeId}`}
-                                    className="detail__btn detail__btn--primary"
-                                    style={{ marginTop: '20px', display: 'inline-flex' }}
-                                >
-                                    <Play size={16} /> {page === pagination?.totalPages || !pagination?.totalPages ? 'Tonton Episode 1' : 'Tonton Episode Terlama di Halaman Ini'}
-                                </Link>
-                            )}
+                            <div style={{ marginTop: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                {episodeList.length > 0 && (
+                                    <Link
+                                        to={`/watch/${animeId}/episode/${episodeList[episodeList.length - 1].episodeId}`}
+                                        className="detail__btn detail__btn--primary"
+                                        style={{ display: 'inline-flex' }}
+                                    >
+                                        <Play size={16} /> {page === pagination?.totalPages || !pagination?.totalPages ? 'Tonton Ep 1' : 'Tonton Episode Terlama di Sini'}
+                                    </Link>
+                                )}
+                                {anime.batch?.batchId && (
+                                    <Link
+                                        to={`/batch/${anime.batch.batchId}`}
+                                        className="detail__btn detail__btn--secondary"
+                                        style={{ display: 'inline-flex' }}
+                                    >
+                                        <Download size={16} /> Download Batch
+                                    </Link>
+                                )}
+                            </div>
                             <div style={{ marginTop: '16px' }}>
                                 <FavoriteButton anime={anime} />
                             </div>
@@ -204,7 +214,7 @@ function WatchAnimeDetail() {
                                     <Play size={14} />
                                 </div>
                                 <div className="episode-card__info">
-                                    <span className="episode-card__title">Episode {ep.title}</span>
+                                    <span className="episode-card__title">{ep.eps}</span>
                                 </div>
                             </Link>
                         ))}

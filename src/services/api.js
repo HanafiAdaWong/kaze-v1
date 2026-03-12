@@ -107,8 +107,10 @@ async function fetchJikan(endpoint) {
 }
 
 async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku') {
-    const baseUrl = `https://www.sankavollerei.com/anime/${source}`;
-    const cacheKey = `sanka:${source}:${endpoint}`;
+    const baseUrl = source
+        ? `https://www.sankavollerei.com/anime/${source}`
+        : `https://www.sankavollerei.com/anime`;
+    const cacheKey = `sanka:${source || 'base'}:${endpoint}`;
     const cached = getCached(cacheKey);
     if (cached) return cached;
 
@@ -247,9 +249,9 @@ export async function getAnimeRecommendations(id) {
 // Sanka Vollerei API (Streaming / Watch)
 // ============================================
 
-/** Home page: recent + popular + ongoing */
+/** Home page: ongoing + completed (Otakudesu) */
 export async function getWatchHome() {
-    const json = await fetchSanka('/home', 'home');
+    const json = await fetchSanka('/home', 'home', '');
     return json.data;
 }
 
@@ -259,21 +261,21 @@ export async function getWatchPopular(page = 1) {
     return json;
 }
 
-/** Search anime on Samehadaku */
+/** Search anime (Otakudesu) */
 export async function searchWatchAnime(query) {
-    const json = await fetchSanka(`/search?q=${encodeURIComponent(query)}`, 'search');
+    const json = await fetchSanka(`/search/${encodeURIComponent(query)}`, 'search', '');
     return json.data;
 }
 
-/** Get anime detail (episodes list) */
+/** Get anime detail (episodes list) — Otakudesu */
 export async function getWatchAnimeDetail(animeId, page = 1) {
-    const json = await fetchSanka(`/anime/${animeId}${page > 1 ? `?page=${page}` : ''}`, 'detail');
+    const json = await fetchSanka(`/anime/${animeId}${page > 1 ? `?page=${page}` : ''}`, 'detail', '');
     return json;
 }
 
-/** Get episode detail (server list) */
+/** Get episode detail (server list) — Uses base endpoint (Otakudesu) */
 export async function getEpisodeDetail(episodeId) {
-    const json = await fetchSanka(`/episode/${episodeId}`, 'episode');
+    const json = await fetchSanka(`/episode/${episodeId}`, 'episode', '');
     return json.data;
 }
 
@@ -296,8 +298,26 @@ export async function getAnoboyEpisodeDetail(slug) {
     return json;
 }
 
+/** [BYPASS] Get episode from Samehadaku specifically */
+export async function getSamehadakuEpisodeDetail(slug) {
+    const json = await fetchSanka(`/episode/${slug}`, 'episode', 'samehadaku');
+    return json;
+}
+
+/** [BYPASS] Get episode from Otakudesu specifically */
+export async function getOtakudesuEpisodeDetail(slug) {
+    const json = await fetchSanka(`/episode/${slug}`, 'episode', '');
+    return json;
+}
+
 /** Get streaming URL from server */
 export async function getServerUrl(serverId) {
-    const json = await fetchSanka(`/server/${serverId}`, 'server');
+    const json = await fetchSanka(`/server/${serverId}`, 'server', '');
+    return json.data;
+}
+
+/** Get batch download details */
+export async function getBatchDetail(batchId) {
+    const json = await fetchSanka(`/batch/${batchId}`, 'detail', '');
     return json.data;
 }

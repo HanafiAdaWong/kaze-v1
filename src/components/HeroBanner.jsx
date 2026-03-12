@@ -59,6 +59,7 @@ function HeroBanner() {
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
+                            objectPosition: 'center 20%',
                             opacity: 0.65, // Increased opacity for brightness
                             filter: 'blur(2px) brightness(0.95)', // Increased brightness, decreased blur
                             transform: index === currentIndex ? 'scale(1.15)' : 'scale(1.05)',
