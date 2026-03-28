@@ -117,8 +117,8 @@ function Watch() {
 
                 {!loading && error && (
                     <div className="error-container">
-                        <div className="error-container__title">Gagal memuat data</div>
-                        <p className="error-container__message">{error}</p>
+                        <div className="error-container__title">Anime belum tersedia diwebsite ini</div>
+                        <p className="error-container__message">Coba cari dengan kata kunci lain.</p>
                         <button className="error-container__btn" onClick={fetchData}>Coba Lagi</button>
                     </div>
                 )}
