@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Tags, Play, Heart, Clock, User } from 'lucide-react'
+import { Home, Tags, Play, Heart, Clock, User, Tv } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function MobileNav() {
@@ -30,6 +30,16 @@ function MobileNav() {
                         <Tags size={22} />
                     </div>
                     <span>Genre</span>
+                </Link>
+
+                <Link
+                    to="/drachin"
+                    className={`mobile-nav__link ${location.pathname.startsWith('/drachin') ? 'mobile-nav__link--active' : ''}`}
+                >
+                    <div className="mobile-nav__icon-wrap">
+                        <Tv size={22} fill={location.pathname.startsWith('/drachin') ? 'currentColor' : 'none'} />
+                    </div>
+                    <span>Drachin</span>
                 </Link>
 
                 <Link

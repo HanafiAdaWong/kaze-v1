@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags } from 'lucide-react'
+import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags, Tv } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Navbar() {
@@ -87,6 +87,12 @@ function Navbar() {
                         className={`navbar__link ${isWatchSection ? 'navbar__link--active' : ''}`}
                     >
                         <span><Play size={14} fill="currentColor" /> Nonton</span>
+                    </Link>
+                    <Link
+                        to="/drachin"
+                        className={`navbar__link ${location.pathname.startsWith('/drachin') ? 'navbar__link--active' : ''}`}
+                    >
+                        <span><Tv size={14} /> Drachin</span>
                     </Link>
                     {isAuthenticated && (
                         <>

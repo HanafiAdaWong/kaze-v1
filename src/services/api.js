@@ -321,3 +321,27 @@ export async function getBatchDetail(batchId) {
     const json = await fetchSanka(`/batch/${batchId}`, 'detail', '');
     return json.data;
 }
+
+// ============================================
+// Drachin (Drama China) API
+// ============================================
+
+export async function getDrachinHome() {
+    const json = await fetchSanka('/drachin/home', 'home', '');
+    return json.data;
+}
+
+export async function searchDrachin(query, page = 1) {
+    const json = await fetchSanka(`/drachin/search/${encodeURIComponent(query)}?page=${page}`, 'search', '');
+    return json.data;
+}
+
+export async function getDrachinDetail(slug) {
+    const json = await fetchSanka(`/drachin/detail/${slug}`, 'detail', '');
+    return json.data;
+}
+
+export async function getDrachinEpisode(slug, index) {
+    const json = await fetchSanka(`/drachin/episode/${slug}?index=${index}`, 'episode', '');
+    return json.data;
+}

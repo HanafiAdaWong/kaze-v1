@@ -17,6 +17,9 @@ import History from './pages/History'
 import Genres from './pages/Genres'
 import BatchDetail from './pages/BatchDetail'
 import NotFound from './pages/NotFound'
+import Drachin from './pages/Drachin'
+import DrachinDetail from './pages/DrachinDetail'
+import DrachinPlayer from './pages/DrachinPlayer'
 
 function App() {
     return (
@@ -52,6 +55,9 @@ function App() {
                     />
                     <Route path="/genres" element={<Genres />} />
                     <Route path="/batch/:batchId" element={<BatchDetail />} />
+                    <Route path="/drachin" element={<Drachin />} />
+                    <Route path="/drachin/:slug" element={<DrachinDetail />} />
+                    <Route path="/drachin/:slug/episode/:index" element={<DrachinPlayer />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>
