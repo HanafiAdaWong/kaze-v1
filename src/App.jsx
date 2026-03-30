@@ -20,6 +20,9 @@ import NotFound from './pages/NotFound'
 import Drachin from './pages/Drachin'
 import DrachinDetail from './pages/DrachinDetail'
 import DrachinPlayer from './pages/DrachinPlayer'
+import Donghua from './pages/Donghua'
+import DonghuaDetail from './pages/DonghuaDetail'
+import DonghuaPlayer from './pages/DonghuaPlayer'
 
 function App() {
     return (
@@ -58,6 +61,9 @@ function App() {
                     <Route path="/drachin" element={<Drachin />} />
                     <Route path="/drachin/:slug" element={<DrachinDetail />} />
                     <Route path="/drachin/:slug/episode/:index" element={<DrachinPlayer />} />
+                    <Route path="/donghua" element={<Donghua />} />
+                    <Route path="/donghua/:slug" element={<DonghuaDetail />} />
+                    <Route path="/donghua/episode/:slug" element={<DonghuaPlayer />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>

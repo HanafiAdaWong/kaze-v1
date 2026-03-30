@@ -345,3 +345,28 @@ export async function getDrachinEpisode(slug, index) {
     const json = await fetchSanka(`/drachin/episode/${slug}?index=${index}`, 'episode', '');
     return json.data;
 }
+
+// ============================================
+// Donghua (Donghub) API
+// ============================================
+
+export async function getDonghuaHome() {
+    const json = await fetchSanka('/donghub/home', 'home', '');
+    return json.data;
+}
+
+export async function searchDonghua(query, page = 1) {
+    const json = await fetchSanka(`/donghub/search/${encodeURIComponent(query)}?page=${page}`, 'search', '');
+    return json.data;
+}
+
+export async function getDonghuaDetail(slug) {
+    const json = await fetchSanka(`/donghub/detail/${slug}`, 'detail', '');
+    return json.data;
+}
+
+export async function getDonghuaEpisode(slug) {
+    const json = await fetchSanka(`/donghub/episode/${slug}`, 'episode', '');
+    return json.data;
+}
+
