@@ -1,55 +1,51 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Settings } from 'lucide-react'
+import { ArrowLeft, Play, MonitorPlay } from 'lucide-react'
 import { getDonghuaEpisode } from '../services/api'
 import Loader from '../components/Loader'
 
 function DonghuaPlayer() {
-    const { slug } = useParams()
+    const { episodeSlug } = useParams()
     const navigate = useNavigate()
 
     const [episodeData, setEpisodeData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    
-    // Server state
-    const [servers, setServers] = useState([])
-    const [currentServer, setCurrentServer] = useState(null)
+
+    // Active server
+    const [activeServer, setActiveServer] = useState(null)
 
     useEffect(() => {
-        let suspended = false
-        async function fetchEpisode() {
+        let cancelled = false
+        async function fetchEp() {
             setLoading(true)
             setError(null)
             try {
-                const epData = await getDonghuaEpisode(slug)
-                
-                if (!suspended) {
-                    setEpisodeData(epData)
-                    
-                    if (epData && epData.streams && epData.streams.length > 0) {
-                        setServers(epData.streams)
-                        setCurrentServer(epData.streams[0])
-                    } else {
-                        setServers([])
-                        setCurrentServer(null)
+                const json = await getDonghuaEpisode(episodeSlug)
+                if (!cancelled) {
+                    setEpisodeData(json)
+                    // Set default server to main_url
+                    if (json.streaming?.main_url?.url) {
+                        setActiveServer(json.streaming.main_url)
+                    } else if (json.streaming?.servers?.length > 0) {
+                        setActiveServer(json.streaming.servers[0])
                     }
                 }
             } catch (err) {
-                if (!suspended) setError(err.message)
+                if (!cancelled) setError(err.message)
             } finally {
-                if (!suspended) setLoading(false)
+                if (!cancelled) setLoading(false)
             }
         }
-        fetchEpisode()
+        fetchEp()
         window.scrollTo({ top: 0, behavior: 'smooth' })
-        return () => { suspended = true }
-    }, [slug])
+        return () => { cancelled = true }
+    }, [episodeSlug])
 
     if (loading) {
         return (
             <div style={{ paddingTop: 'calc(var(--navbar-height) + 20px)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Loader text="Menyiapkan pemutar donghua..." />
+                <Loader text="Menyiapkan pemutar video..." />
             </div>
         )
     }
@@ -68,62 +64,76 @@ function DonghuaPlayer() {
         )
     }
 
-    const title = episodeData.title || 'Menonton Donghua'
+    const donghuaDetails = episodeData.donghua_details || {}
+    const donghuaSlug = donghuaDetails.slug || ''
+    const donghuaTitle = donghuaDetails.title || ''
+    const episodeTitle = episodeData.episode || ''
+    const servers = episodeData.streaming?.servers || []
+    const episodesList = episodeData.episodes_list || []
     const nav = episodeData.navigation || {}
-    const animeInfo = episodeData.anime_info || {}
-    const related = episodeData.related_episodes || []
+
+    // Reverse so ep 1 is first
+    const sortedEpisodes = [...episodesList].reverse()
+
+    // Extract episode number
+    const getEpNumber = (epTitle) => {
+        const match = epTitle.match(/episode\s*(\d+)/i)
+        return match ? match[1] : epTitle
+    }
 
     return (
         <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
             <div className="player-container">
                 <div className="player-header">
-                    <button 
-                        onClick={() => navigate(nav.all_slug ? `/donghua/${nav.all_slug}` : '/donghua')} 
-                        className="watch-back-btn"
-                    >
-                        <ArrowLeft size={16} /> Kembali ke {animeInfo.title || 'Info'}
+                    <button onClick={() => navigate(`/donghua/${donghuaSlug}`)} className="watch-back-btn">
+                        <ArrowLeft size={16} /> Kembali ke Info
                     </button>
                     <h1 className="player-title">
-                        {title}
+                        {donghuaTitle} - {getEpNumber(episodeTitle)}
                     </h1>
                 </div>
 
+                {/* Video Player (iframe) */}
                 <div className="player-wrapper" style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9' }}>
-                    {currentServer ? (
+                    {activeServer?.url ? (
                         <iframe
-                            src={currentServer.url}
-                            title="Pemutar Video Donghua"
+                            src={activeServer.url}
+                            title={episodeTitle}
                             allowFullScreen
-                            allow="autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                        ></iframe>
+                            allow="autoplay; fullscreen; encrypted-media"
+                            style={{ width: '100%', height: '100%', border: 'none' }}
+                        />
                     ) : (
-                        <div className="error-container" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                             <p>Sumber video tidak ditemukan.</p>
                         </div>
                     )}
                 </div>
 
-                <div className="player-controls">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                            <Settings size={14} style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> Server:
-                        </span>
-                        {servers.map((server, idx) => (
-                            <button
-                                key={idx}
-                                className={`server-btn ${currentServer === server ? 'server-btn--active' : ''}`}
-                                onClick={() => setCurrentServer(server)}
-                            >
-                                {server.server}
-                            </button>
-                        ))}
+                {/* Server Selection */}
+                {servers.length > 0 && (
+                    <div className="player-controls">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                <MonitorPlay size={14} style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> Server:
+                            </span>
+                            {servers.map((srv, idx) => (
+                                <button
+                                    key={idx}
+                                    className={`server-btn ${activeServer?.url === srv.url ? 'server-btn--active' : ''}`}
+                                    onClick={() => setActiveServer(srv)}
+                                >
+                                    {srv.name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
 
+                {/* Episode Navigation */}
                 <div className="player-nav">
-                    {nav.prev_slug ? (
-                        <Link to={`/donghua/episode/${nav.prev_slug}`} className="player-nav-btn">
+                    {nav.prev?.slug ? (
+                        <Link to={`/donghua/episode/${nav.prev.slug}`} className="player-nav-btn">
                             <ArrowLeft size={16} /> Episode Sebelumnya
                         </Link>
                     ) : (
@@ -132,8 +142,8 @@ function DonghuaPlayer() {
                         </button>
                     )}
 
-                    {nav.next_slug ? (
-                        <Link to={`/donghua/episode/${nav.next_slug}`} className="player-nav-btn player-nav-btn--next">
+                    {nav.next?.slug ? (
+                        <Link to={`/donghua/episode/${nav.next.slug}`} className="player-nav-btn player-nav-btn--next">
                             Episode Selanjutnya <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
                         </Link>
                     ) : (
@@ -143,25 +153,25 @@ function DonghuaPlayer() {
                     )}
                 </div>
 
-                {related.length > 0 && (
-                    <div style={{ marginTop: '40px', paddingBottom: '40px' }}>
+                {/* Episode List */}
+                {sortedEpisodes.length > 0 && (
+                    <div style={{ marginTop: '40px' }}>
                         <h2 className="section-title">
                             <Play size={20} />
-                            <span>Episode <span className="accent">Lainnya</span></span>
+                            <span>Pilih <span className="accent">Episode</span></span>
                         </h2>
                         <div className="episode-grid">
-                            {related.map((ep) => (
+                            {sortedEpisodes.map((ep) => (
                                 <Link
                                     key={ep.slug}
                                     to={`/donghua/episode/${ep.slug}`}
-                                    className={`episode-card ${ep.slug === slug ? 'episode-card--active' : ''}`}
+                                    className={`episode-card ${ep.slug === episodeSlug ? 'episode-card--active' : ''}`}
                                 >
                                     <div className="episode-card__number">
                                         <Play size={14} />
                                     </div>
                                     <div className="episode-card__info">
-                                        <span className="episode-card__title">{ep.title.replace(animeInfo.title || '', '').trim() || ep.title}</span>
-                                        {ep.posted_date && <span className="episode-card__date" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ep.posted_date}</span>}
+                                        <span className="episode-card__title">{getEpNumber(ep.episode)}</span>
                                     </div>
                                 </Link>
                             ))}

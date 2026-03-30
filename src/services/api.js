@@ -347,26 +347,59 @@ export async function getDrachinEpisode(slug, index) {
 }
 
 // ============================================
-// Donghua (Donghub) API
+// Donghua API (uses raw fetch — different response format)
 // ============================================
 
-export async function getDonghuaHome() {
-    const json = await fetchSanka('/donghub/home', 'home', '');
-    return json.data;
+async function fetchDonghua(endpoint, cacheTtlKey = 'detail') {
+    const cacheKey = `donghua:${endpoint}`;
+    const cached = getCached(cacheKey);
+    if (cached) return cached;
+
+    if (pendingRequests.has(cacheKey)) {
+        return pendingRequests.get(cacheKey);
+    }
+
+    const promise = (async () => {
+        await sankaRateLimiter.waitForSlot();
+        const url = `https://www.sankavollerei.com/anime/donghua${endpoint}`;
+        const res = await fetchWithTimeout(url, 20000);
+
+        if (res.status === 429) {
+            throw new Error('Rate limit tercapai. Tunggu sebentar lalu coba lagi.');
+        }
+        if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+        }
+
+        const json = await res.json();
+        setCache(cacheKey, json, CACHE_TTL[cacheTtlKey] || CACHE_TTL.detail);
+        return json;
+    })();
+
+    pendingRequests.set(cacheKey, promise);
+    try {
+        return await promise;
+    } finally {
+        pendingRequests.delete(cacheKey);
+    }
 }
 
-export async function searchDonghua(query, page = 1) {
-    const json = await fetchSanka(`/donghub/search/${encodeURIComponent(query)}?page=${page}`, 'search', '');
-    return json.data;
+export async function getDonghuaHome() {
+    const json = await fetchDonghua('/home', 'home');
+    return json.data || json;
+}
+
+export async function searchDonghua(query) {
+    const json = await fetchDonghua(`/search/${encodeURIComponent(query)}`, 'search');
+    return json.data || [];
 }
 
 export async function getDonghuaDetail(slug) {
-    const json = await fetchSanka(`/donghub/detail/${slug}`, 'detail', '');
-    return json.data;
+    const json = await fetchDonghua(`/detail/${slug}`, 'detail');
+    return json.data || json;
 }
 
 export async function getDonghuaEpisode(slug) {
-    const json = await fetchSanka(`/donghub/episode/${slug}`, 'episode', '');
-    return json.data;
+    const json = await fetchDonghua(`/episode/${slug}`, 'episode');
+    return json;
 }
-

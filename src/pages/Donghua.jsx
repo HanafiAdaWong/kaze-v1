@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, Play, TrendingUp, Sparkles, Navigation } from 'lucide-react'
+import { Search, Play, TrendingUp, Sparkles } from 'lucide-react'
 import { getDonghuaHome, searchDonghua } from '../services/api'
 import Loader from '../components/Loader'
 import DonghuaCard from '../components/DonghuaCard'
@@ -23,7 +23,7 @@ function Donghua() {
         try {
             if (queryFromUrl) {
                 const result = await searchDonghua(queryFromUrl)
-                setSearchResults(result)
+                setSearchResults(Array.isArray(result) ? result : [])
             } else {
                 const data = await getDonghuaHome()
                 setHomeData(data)
@@ -64,7 +64,7 @@ function Donghua() {
                         <input
                             type="text"
                             className="watch-search__input"
-                            placeholder="Cari donghua kesukaanmu..."
+                            placeholder="Cari donghua..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -74,7 +74,7 @@ function Donghua() {
                     </form>
                 </div>
 
-                {loading && <Loader text="Memuat data donghua..." />}
+                {loading && <Loader text="Memuat donghua..." />}
 
                 {!loading && error && (
                     <div className="error-container">
@@ -92,8 +92,8 @@ function Donghua() {
                         </h2>
                         {searchResults.length > 0 ? (
                             <div className="anime-grid">
-                                {searchResults.map((donghua) => (
-                                    <DonghuaCard key={donghua.slug} donghua={donghua} isEpisode={false} />
+                                {searchResults.map((d) => (
+                                    <DonghuaCard key={d.slug} donghua={d} />
                                 ))}
                             </div>
                         ) : (
@@ -108,25 +108,8 @@ function Donghua() {
                 {/* Home Data */}
                 {!loading && !error && !isSearchMode && homeData && (
                     <div>
-                        {/* Rekomendasi/Slider (These are series) */}
-                        {homeData.slider?.length > 0 && (
-                            <section className="watch-section" style={{ marginBottom: '40px' }}>
-                                <div className="watch-section__header">
-                                    <h2 className="section-title">
-                                        <Navigation size={20} />
-                                        <span>Rekomendasi <span className="accent">Epik</span></span>
-                                    </h2>
-                                </div>
-                                <div className="anime-grid">
-                                    {homeData.slider.map((donghua) => (
-                                        <DonghuaCard key={donghua.slug} donghua={donghua} isEpisode={false} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Latest (These are episodes) */}
-                        {homeData.latest?.length > 0 && (
+                        {/* Latest Release */}
+                        {homeData.latest_release?.length > 0 && (
                             <section className="watch-section">
                                 <div className="watch-section__header">
                                     <h2 className="section-title">
@@ -135,25 +118,25 @@ function Donghua() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.latest.map((donghua) => (
-                                        <DonghuaCard key={donghua.slug} donghua={donghua} isEpisode={true} />
+                                    {homeData.latest_release.map((d) => (
+                                        <DonghuaCard key={d.slug} donghua={d} />
                                     ))}
                                 </div>
                             </section>
                         )}
 
-                        {/* Popular (These are episodes) */}
-                        {homeData.popular?.length > 0 && (
-                            <section className="watch-section" style={{ marginTop: '40px' }}>
+                        {/* Completed */}
+                        {homeData.completed_donghua?.length > 0 && (
+                            <section className="watch-section">
                                 <div className="watch-section__header">
                                     <h2 className="section-title">
                                         <TrendingUp size={20} />
-                                        <span>Paling <span className="accent">Populer</span></span>
+                                        <span>Selesai <span className="accent">Tayang</span></span>
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.popular.map((donghua) => (
-                                        <DonghuaCard key={donghua.slug} donghua={donghua} isEpisode={true} />
+                                    {homeData.completed_donghua.map((d) => (
+                                        <DonghuaCard key={d.slug} donghua={d} />
                                     ))}
                                 </div>
                             </section>

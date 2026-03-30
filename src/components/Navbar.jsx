@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags, Tv, Flame } from 'lucide-react'
+import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags, Tv, Clapperboard } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Navbar() {
@@ -98,7 +98,7 @@ function Navbar() {
                         to="/donghua"
                         className={`navbar__link ${location.pathname.startsWith('/donghua') ? 'navbar__link--active' : ''}`}
                     >
-                        <span><Flame size={14} /> Donghua</span>
+                        <span><Clapperboard size={14} /> Donghua</span>
                     </Link>
                     {isAuthenticated && (
                         <>

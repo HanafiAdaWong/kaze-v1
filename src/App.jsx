@@ -62,8 +62,8 @@ function App() {
                     <Route path="/drachin/:slug" element={<DrachinDetail />} />
                     <Route path="/drachin/:slug/episode/:index" element={<DrachinPlayer />} />
                     <Route path="/donghua" element={<Donghua />} />
+                    <Route path="/donghua/episode/:episodeSlug" element={<DonghuaPlayer />} />
                     <Route path="/donghua/:slug" element={<DonghuaDetail />} />
-                    <Route path="/donghua/episode/:slug" element={<DonghuaPlayer />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>

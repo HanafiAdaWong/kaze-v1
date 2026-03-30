@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Tv } from 'lucide-react'
+import { ArrowLeft, Play, Tv, Calendar, User } from 'lucide-react'
 import { getDonghuaDetail } from '../services/api'
 import Loader from '../components/Loader'
 
@@ -12,28 +12,31 @@ function DonghuaDetail() {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        let suspended = false
+        let cancelled = false
         async function fetchDetail() {
             setLoading(true)
             setError(null)
             try {
-                const data = await getDonghuaDetail(slug)
-                if (!suspended) setDetail(data)
+                const json = await getDonghuaDetail(slug)
+                if (!cancelled) {
+                    // The detail endpoint returns {data: {..., episodes_list: [...]}}
+                    setDetail(json.data || json)
+                }
             } catch (err) {
-                if (!suspended) setError(err.message)
+                if (!cancelled) setError(err.message)
             } finally {
-                if (!suspended) setLoading(false)
+                if (!cancelled) setLoading(false)
             }
         }
         fetchDetail()
         window.scrollTo({ top: 0, behavior: 'smooth' })
-        return () => { suspended = true }
+        return () => { cancelled = true }
     }, [slug])
 
     if (loading) {
         return (
             <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Loader text="Memuat informasi Donghua..." />
+                <Loader text="Memuat detail donghua..." />
             </div>
         )
     }
@@ -52,11 +55,24 @@ function DonghuaDetail() {
         )
     }
 
-    const title = detail.title
-    const poster = detail.poster
-    const synopsis = detail.synopsis
-    const info = detail.info || {}
-    const episodeList = detail.episode_list || []
+    const title = detail.title || ''
+    const poster = detail.poster || ''
+    const synopsis = detail.synopsis || ''
+    const type = detail.type || 'Donghua'
+    const status = detail.status || ''
+    const released = detail.released || ''
+    const uploader = detail.uploader || ''
+    // Episodes come from the detail endpoint
+    const episodeList = detail.episodes_list || []
+
+    // Reverse the episode list so oldest (ep 1) is first
+    const sortedEpisodes = [...episodeList].reverse()
+
+    // Extract a short episode number from the full title
+    const getEpNumber = (epTitle) => {
+        const match = epTitle.match(/episode\s*(\d+)/i)
+        return match ? match[1] : epTitle
+    }
 
     return (
         <div className="detail" style={{ paddingTop: 'var(--navbar-height)' }}>
@@ -80,33 +96,39 @@ function DonghuaDetail() {
                             </button>
 
                             <div className="detail__badges">
-                                <span className="badge badge--accent">Donghua</span>
-                                {info.status && <span className="badge badge--success">{info.status}</span>}
+                                <span className="badge badge--accent">{type}</span>
+                                {status && <span className="badge">{status}</span>}
                             </div>
 
                             <h1 className="detail__title">{title}</h1>
 
-                            <div className="watch-detail-meta" style={{ flexWrap: 'wrap' }}>
+                            <div className="watch-detail-meta">
                                 <div className="watch-detail-meta__item">
                                     <Tv size={16} />
-                                    <span>{info.episodes || episodeList.length} Episode</span>
+                                    <span>{sortedEpisodes.length} Episode</span>
                                 </div>
-                                {info.type && <span className="watch-detail-meta__dot" />}
-                                {info.type && <span>{info.type}</span>}
-                                {info.studio && <span className="watch-detail-meta__dot" />}
-                                {info.studio && <span>{info.studio}</span>}
+                                {released && (
+                                    <div className="watch-detail-meta__item">
+                                        <Calendar size={16} />
+                                        <span>{released}</span>
+                                    </div>
+                                )}
+                                {uploader && (
+                                    <div className="watch-detail-meta__item">
+                                        <User size={16} />
+                                        <span>{uploader}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {synopsis && (
-                                <p className="watch-detail-synopsis">
-                                    {synopsis}
-                                </p>
+                                <p className="watch-detail-synopsis">{synopsis}</p>
                             )}
 
                             <div style={{ marginTop: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                                {episodeList.length > 0 && (
+                                {sortedEpisodes.length > 0 && (
                                     <Link
-                                        to={`/donghua/episode/${episodeList[episodeList.length - 1].slug}`}
+                                        to={`/donghua/episode/${sortedEpisodes[0].slug}`}
                                         className="detail__btn detail__btn--primary"
                                         style={{ display: 'inline-flex' }}
                                     >
@@ -126,15 +148,14 @@ function DonghuaDetail() {
                     <span>Daftar <span className="accent">Episode</span></span>
                 </h2>
 
-                {episodeList.length === 0 ? (
+                {sortedEpisodes.length === 0 ? (
                     <div className="error-container" style={{ minHeight: '200px' }}>
                         <div className="error-container__title">Belum ada episode</div>
                         <p className="error-container__message">Episode belum tersedia untuk donghua ini.</p>
                     </div>
                 ) : (
                     <div className="episode-grid">
-                        {/* Donghub episode_list might be newest to oldest, reverse it or just render */}
-                        {episodeList.reverse().map((ep, i) => (
+                        {sortedEpisodes.map((ep, i) => (
                             <Link
                                 key={ep.slug}
                                 to={`/donghua/episode/${ep.slug}`}
@@ -145,8 +166,7 @@ function DonghuaDetail() {
                                     <Play size={14} />
                                 </div>
                                 <div className="episode-card__info">
-                                    <span className="episode-card__title">Ep {ep.episode}</span>
-                                    {ep.date && <span className="episode-card__date" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{ep.date}</span>}
+                                    <span className="episode-card__title">{getEpNumber(ep.episode)}</span>
                                 </div>
                             </Link>
                         ))}
