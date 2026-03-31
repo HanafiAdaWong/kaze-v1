@@ -45,7 +45,7 @@ function DonghuaPlayer() {
                         episodeId: episodeSlug,
                         title: json.donghua_details?.title || 'Donghua',
                         episodeTitle: json.episode || episodeSlug,
-                        poster: json.donghua_details?.image,
+                        poster: json.donghua_details?.poster || json.donghua_details?.image,
                         type: 'donghua',
                         timestamp: Date.now()
                     })

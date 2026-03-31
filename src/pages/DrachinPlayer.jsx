@@ -53,7 +53,7 @@ function DrachinPlayer() {
                         episodeId: index,
                         title: detailData?.title || epData?.title || 'Drama China',
                         episodeTitle: `Episode ${epData.episode || index}`,
-                        poster: epData.poster || detailData?.image,
+                        poster: epData.poster || detailData?.poster || detailData?.image,
                         type: 'drachin',
                         timestamp: Date.now()
                     })
