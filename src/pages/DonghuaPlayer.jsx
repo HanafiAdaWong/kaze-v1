@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play, MonitorPlay, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
 import { getDonghuaEpisode } from '../services/api'
+import { addToHistory } from '../utils/history'
+import { useAuth } from '../contexts/AuthContext'
+import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
 
 function DonghuaPlayer() {
     const { episodeSlug } = useParams()
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     const [episodeData, setEpisodeData] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -34,6 +38,22 @@ function DonghuaPlayer() {
                     } else if (json.streaming?.servers?.length > 0) {
                         setActiveServer(json.streaming.servers[0])
                     }
+
+                    // Save to history
+                    addToHistory({
+                        animeId: json.donghua_details?.slug || episodeSlug,
+                        episodeId: episodeSlug,
+                        title: json.donghua_details?.title || 'Donghua',
+                        episodeTitle: json.episode || episodeSlug,
+                        poster: json.donghua_details?.image,
+                        type: 'donghua',
+                        timestamp: Date.now()
+                    })
+
+                    // Add XP (10 points per episode watch)
+                    if (user) {
+                        addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
+                    }
                 }
             } catch (err) {
                 if (!cancelled) setError(err.message)
@@ -44,7 +64,7 @@ function DonghuaPlayer() {
         fetchEp()
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return () => { cancelled = true }
-    }, [episodeSlug])
+    }, [episodeSlug, user])
 
     const handleFullscreen = () => {
         const iframe = document.getElementById('player-iframe')

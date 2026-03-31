@@ -2,11 +2,15 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play, Settings, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
 import { getDrachinEpisode, getDrachinDetail } from '../services/api'
+import { addToHistory } from '../utils/history'
+import { useAuth } from '../contexts/AuthContext'
+import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
 
 function DrachinPlayer() {
     const { slug, index } = useParams()
     const navigate = useNavigate()
+    const { user } = useAuth()
 
     const [episodeData, setEpisodeData] = useState(null)
     const [detail, setDetail] = useState(null)
@@ -42,6 +46,22 @@ function DrachinPlayer() {
                             setCurrentRes(available[0])
                         }
                     }
+
+                    // Save to history
+                    addToHistory({
+                        animeId: slug, // Using slug as ID
+                        episodeId: index,
+                        title: detailData?.title || epData?.title || 'Drama China',
+                        episodeTitle: `Episode ${epData.episode || index}`,
+                        poster: epData.poster || detailData?.image,
+                        type: 'drachin',
+                        timestamp: Date.now()
+                    })
+
+                    // Add XP (10 points per episode watch)
+                    if (user) {
+                        addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
+                    }
                 }
             } catch (err) {
                 if (!suspended) setError(err.message)
@@ -52,7 +72,7 @@ function DrachinPlayer() {
         fetchAll()
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return () => { suspended = true }
-    }, [slug, index])
+    }, [slug, index, user])
 
     const handleResolutionChange = (res) => {
         if (!videoRef.current) return

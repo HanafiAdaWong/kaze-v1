@@ -121,6 +121,7 @@ function EpisodePlayer() {
                         title: anime.english || anime.synonyms || anime.title || animeId,
                         episodeTitle: data.title || `Episode ${episodeId}`,
                         poster: anime.poster || anime.image || anime.img,
+                        type: 'anime',
                         timestamp: Date.now()
                     })
                 }
