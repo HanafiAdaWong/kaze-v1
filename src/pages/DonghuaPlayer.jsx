@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, MonitorPlay, ChevronLeft, ChevronRight, Maximize2, Monitor } from 'lucide-react'
+import { ArrowLeft, Play, MonitorPlay, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
 import { getDonghuaEpisode } from '../services/api'
 import Loader from '../components/Loader'
 
@@ -14,6 +14,10 @@ function DonghuaPlayer() {
 
     // Active server
     const [activeServer, setActiveServer] = useState(null)
+    const [autoplay, setAutoplay] = useState(() => {
+        const saved = localStorage.getItem('autoplay_donghua')
+        return saved !== null ? JSON.parse(saved) : true
+    })
 
     useEffect(() => {
         let cancelled = false
@@ -48,6 +52,14 @@ function DonghuaPlayer() {
             if (iframe.requestFullscreen) iframe.requestFullscreen()
             else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen()
         }
+    }
+
+    const toggleAutoplay = () => {
+        setAutoplay(prev => {
+            const newValue = !prev
+            localStorage.setItem('autoplay_donghua', JSON.stringify(newValue))
+            return newValue
+        })
     }
 
     if (loading) {
@@ -132,9 +144,19 @@ function DonghuaPlayer() {
                                 </Link>
                             )}
                         </div>
-                        <button className="player-nav-btn" onClick={handleFullscreen}>
-                            <Maximize2 size={16} /> Layar Penuh
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                                className={`player-nav-btn ${autoplay ? 'player-nav-btn--active' : ''}`} 
+                                onClick={toggleAutoplay}
+                                title={autoplay ? 'Autoplay Aktif' : 'Autoplay Nonaktif'}
+                            >
+                                <RefreshCw size={16} className={autoplay ? 'spin-slow' : ''} />
+                                <span className="hide-mobile">Autoplay: {autoplay ? 'ON' : 'OFF'}</span>
+                            </button>
+                            <button className="player-nav-btn" onClick={handleFullscreen}>
+                                <Maximize2 size={16} /> <span className="hide-mobile">Layar Penuh</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

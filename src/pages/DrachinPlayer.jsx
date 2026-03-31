@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Settings, ChevronLeft, ChevronRight, Maximize2, Monitor } from 'lucide-react'
+import { ArrowLeft, Play, Settings, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
 import { getDrachinEpisode, getDrachinDetail } from '../services/api'
 import Loader from '../components/Loader'
 
@@ -15,6 +15,10 @@ function DrachinPlayer() {
     
     const [resolutions, setResolutions] = useState({})
     const [currentRes, setCurrentRes] = useState('')
+    const [autoplay, setAutoplay] = useState(() => {
+        const saved = localStorage.getItem('autoplay_drachin')
+        return saved !== null ? JSON.parse(saved) : true
+    })
     const videoRef = useRef(null)
 
     useEffect(() => {
@@ -71,6 +75,20 @@ function DrachinPlayer() {
         if (video) {
             if (video.requestFullscreen) video.requestFullscreen()
             else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen()
+        }
+    }
+
+    const toggleAutoplay = () => {
+        setAutoplay(prev => {
+            const newValue = !prev
+            localStorage.setItem('autoplay_drachin', JSON.stringify(newValue))
+            return newValue
+        })
+    }
+
+    const handleVideoEnded = () => {
+        if (autoplay && nextEp) {
+            navigate(`/drachin/${slug}/episode/${nextEp.index}`)
         }
     }
 
@@ -132,6 +150,7 @@ function DrachinPlayer() {
                                 playsInline
                                 className="player-iframe"
                                 style={{ objectFit: 'contain' }}
+                                onEnded={handleVideoEnded}
                             />
                         ) : (
                             <div className="player-placeholder">
@@ -153,9 +172,19 @@ function DrachinPlayer() {
                                 </Link>
                             )}
                         </div>
-                        <button className="player-nav-btn" onClick={handleFullscreen}>
-                            <Maximize2 size={16} /> Layar Penuh
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                                className={`player-nav-btn ${autoplay ? 'player-nav-btn--active' : ''}`} 
+                                onClick={toggleAutoplay}
+                                title={autoplay ? 'Autoplay Aktif' : 'Autoplay Nonaktif'}
+                            >
+                                <RefreshCw size={16} className={autoplay ? 'spin-slow' : ''} />
+                                <span className="hide-mobile">Autoplay: {autoplay ? 'ON' : 'OFF'}</span>
+                            </button>
+                            <button className="player-nav-btn" onClick={handleFullscreen}>
+                                <Maximize2 size={16} /> <span className="hide-mobile">Layar Penuh</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

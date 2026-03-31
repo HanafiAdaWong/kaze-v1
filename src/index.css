@@ -4025,3 +4025,26 @@ ol {
     font-size: 0.7rem;
   }
 }
+
+/* Autoplay Toggle Styling */
+.player-nav-btn--active {
+  color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  background: var(--bg-glass-hover) !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+}
+
+.spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none;
+  }
+}
