@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, MonitorPlay } from 'lucide-react'
+import { ArrowLeft, Play, MonitorPlay, ChevronLeft, ChevronRight, Maximize2, Monitor } from 'lucide-react'
 import { getDonghuaEpisode } from '../services/api'
 import Loader from '../components/Loader'
 
@@ -42,9 +42,17 @@ function DonghuaPlayer() {
         return () => { cancelled = true }
     }, [episodeSlug])
 
+    const handleFullscreen = () => {
+        const iframe = document.getElementById('player-iframe')
+        if (iframe) {
+            if (iframe.requestFullscreen) iframe.requestFullscreen()
+            else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen()
+        }
+    }
+
     if (loading) {
         return (
-            <div style={{ paddingTop: 'calc(var(--navbar-height) + 20px)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Loader text="Menyiapkan pemutar video..." />
             </div>
         )
@@ -52,7 +60,7 @@ function DonghuaPlayer() {
 
     if (error || !episodeData) {
         return (
-            <div style={{ paddingTop: 'calc(var(--navbar-height) + 20px)', minHeight: '100vh' }}>
+            <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh' }}>
                 <div className="error-container">
                     <div className="error-container__title">Video belum tersedia</div>
                     <p className="error-container__message">{error || 'Data episode ini tidak ditemukan.'}</p>
@@ -82,78 +90,73 @@ function DonghuaPlayer() {
     }
 
     return (
-        <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-            <div className="player-container">
+        <div className="player-page">
+            <div className="container">
                 <div className="player-header">
-                    <button onClick={() => navigate(`/donghua/${donghuaSlug}`)} className="watch-back-btn">
+                    <Link to={`/donghua/${donghuaSlug}`} className="watch-back-btn">
                         <ArrowLeft size={16} /> Kembali ke Info
-                    </button>
+                    </Link>
                     <h1 className="player-title">
                         {donghuaTitle} - {getEpNumber(episodeTitle)}
                     </h1>
                 </div>
 
-                {/* Video Player (iframe) */}
-                <div className="player-wrapper" style={{ position: 'relative', background: '#000', borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9' }}>
-                    {activeServer?.url ? (
-                        <iframe
-                            src={activeServer.url}
-                            title={episodeTitle}
-                            allowFullScreen
-                            allow="autoplay; fullscreen; encrypted-media"
-                            style={{ width: '100%', height: '100%', border: 'none' }}
-                        />
-                    ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                            <p>Sumber video tidak ditemukan.</p>
+                <div className="player-wrapper">
+                    <div className="player-container">
+                        {activeServer?.url ? (
+                            <iframe
+                                id="player-iframe"
+                                src={activeServer.url}
+                                title={episodeTitle}
+                                allowFullScreen
+                                allow="autoplay; fullscreen; encrypted-media"
+                                className="player-iframe"
+                            />
+                        ) : (
+                            <div className="player-placeholder">
+                                <p>Sumber video tidak ditemukan.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="player-controls">
+                        <div className="player-controls__nav">
+                            {nav.prev?.slug && (
+                                <Link to={`/donghua/episode/${nav.prev.slug}`} className="player-nav-btn">
+                                    <ChevronLeft size={16} /> Sebelumnya
+                                </Link>
+                            )}
+                            {nav.next?.slug && (
+                                <Link to={`/donghua/episode/${nav.next.slug}`} className="player-nav-btn">
+                                    Selanjutnya <ChevronRight size={16} />
+                                </Link>
+                            )}
                         </div>
-                    )}
+                        <button className="player-nav-btn" onClick={handleFullscreen}>
+                            <Maximize2 size={16} /> Layar Penuh
+                        </button>
+                    </div>
                 </div>
 
-                {/* Server Selection */}
-                {servers.length > 0 && (
-                    <div className="player-controls">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                <MonitorPlay size={14} style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> Server:
-                            </span>
+                <div className="server-section">
+                    <h3 className="server-section__title">
+                        <MonitorPlay size={18} /> Pilih Server
+                    </h3>
+                    <div className="server-quality">
+                        <div className="server-quality__list">
                             {servers.map((srv, idx) => (
                                 <button
                                     key={idx}
                                     className={`server-btn ${activeServer?.url === srv.url ? 'server-btn--active' : ''}`}
                                     onClick={() => setActiveServer(srv)}
                                 >
-                                    {srv.name}
+                                    <Play size={14} /> {srv.name}
                                 </button>
                             ))}
                         </div>
                     </div>
-                )}
-
-                {/* Episode Navigation */}
-                <div className="player-nav">
-                    {nav.prev?.slug ? (
-                        <Link to={`/donghua/episode/${nav.prev.slug}`} className="player-nav-btn">
-                            <ArrowLeft size={16} /> Episode Sebelumnya
-                        </Link>
-                    ) : (
-                        <button className="player-nav-btn" disabled style={{ opacity: 0.5 }}>
-                            <ArrowLeft size={16} /> Episode Sebelumnya
-                        </button>
-                    )}
-
-                    {nav.next?.slug ? (
-                        <Link to={`/donghua/episode/${nav.next.slug}`} className="player-nav-btn player-nav-btn--next">
-                            Episode Selanjutnya <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
-                        </Link>
-                    ) : (
-                        <button className="player-nav-btn player-nav-btn--next" disabled style={{ opacity: 0.5 }}>
-                            Episode Selanjutnya <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
-                        </button>
-                    )}
                 </div>
 
-                {/* Episode List */}
                 {sortedEpisodes.length > 0 && (
                     <div style={{ marginTop: '40px' }}>
                         <h2 className="section-title">
@@ -167,9 +170,6 @@ function DonghuaPlayer() {
                                     to={`/donghua/episode/${ep.slug}`}
                                     className={`episode-card ${ep.slug === episodeSlug ? 'episode-card--active' : ''}`}
                                 >
-                                    <div className="episode-card__number">
-                                        <Play size={14} />
-                                    </div>
                                     <div className="episode-card__info">
                                         <span className="episode-card__title">{getEpNumber(ep.episode)}</span>
                                     </div>
