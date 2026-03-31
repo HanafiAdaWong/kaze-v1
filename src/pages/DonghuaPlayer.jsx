@@ -41,11 +41,11 @@ function DonghuaPlayer() {
 
                     // Save to history
                     addToHistory({
-                        animeId: json.donghua_details?.slug || episodeSlug,
+                        animeId: json.donghua_details?.slug || json.slug || episodeSlug,
                         episodeId: episodeSlug,
-                        title: json.donghua_details?.title || 'Donghua',
+                        title: json.donghua_details?.title || json.title || 'Donghua',
                         episodeTitle: json.episode || episodeSlug,
-                        poster: json.donghua_details?.poster || json.donghua_details?.image,
+                        poster: json.donghua_details?.poster || json.poster || json.donghua_details?.image || json.image,
                         type: 'donghua',
                         timestamp: Date.now()
                     })
@@ -105,8 +105,8 @@ function DonghuaPlayer() {
     }
 
     const donghuaDetails = episodeData.donghua_details || {}
-    const donghuaSlug = donghuaDetails.slug || ''
-    const donghuaTitle = donghuaDetails.title || ''
+    const donghuaSlug = donghuaDetails.slug || episodeData.slug || ''
+    const donghuaTitle = donghuaDetails.title || episodeData.title || ''
     const episodeTitle = episodeData.episode || ''
     const servers = episodeData.streaming?.servers || []
     const episodesList = episodeData.episodes_list || []
