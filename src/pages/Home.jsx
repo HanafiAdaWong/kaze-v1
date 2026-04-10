@@ -123,7 +123,7 @@ function Home() {
                                 </h1>
                                 <p className="hero__description">
                                     Telusuri ribuan judul anime, baca sinopsis, cek rating,
-                                    dan temukan serial favoritmu — didukung oleh MyAnimeList.
+                                    dan temukan serial favoritmu.
                                 </p>
                                 <form className="hero__search" onSubmit={handleHeroSearch}>
                                     <Search className="hero__search-icon" size={20} />
@@ -231,7 +231,7 @@ function Home() {
                                 Coba cari dengan kata kunci lain atau jelajahi anime terbaik.
                             </p>
                             <button className="error-container__btn" onClick={() => navigate('/')}>
-                                Ke Beranda
+                                Ke Sinopsis
                             </button>
                         </div>
                     )}

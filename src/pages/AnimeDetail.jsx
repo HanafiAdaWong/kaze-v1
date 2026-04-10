@@ -87,7 +87,7 @@ function AnimeDetail() {
                     <div className="error-container__title">Gagal memuat anime</div>
                     <p className="error-container__message">{error || 'Anime tidak ditemukan.'}</p>
                     <button className="error-container__btn" onClick={() => navigate('/')}>
-                        Ke Beranda
+                        Ke Sinopsis
                     </button>
                 </div>
             </div>

@@ -74,7 +74,7 @@ function Navbar() {
                         to="/"
                         className={`navbar__link ${location.pathname === '/' ? 'navbar__link--active' : ''}`}
                     >
-                        <span><HomeIcon size={14} /> Beranda</span>
+                        <span><HomeIcon size={14} /> Sinopsis</span>
                     </Link>
                     <Link
                         to="/genres"
@@ -86,7 +86,7 @@ function Navbar() {
                         to="/watch"
                         className={`navbar__link ${isWatchSection ? 'navbar__link--active' : ''}`}
                     >
-                        <span><Play size={14} fill="currentColor" /> Nonton</span>
+                        <span><Play size={14} fill="currentColor" /> Anime</span>
                     </Link>
                     <Link
                         to="/drachin"

@@ -19,7 +19,7 @@ function MobileNav() {
                     <div className="mobile-nav__icon-wrap">
                         <Home size={22} />
                     </div>
-                    <span>Beranda</span>
+                    <span>Sinopsis</span>
                 </Link>
 
                 <Link
@@ -59,7 +59,7 @@ function MobileNav() {
                     <div className="mobile-nav__icon-wrap">
                         <Play size={22} fill={isWatchActive ? 'currentColor' : 'none'} />
                     </div>
-                    <span>Nonton</span>
+                    <span>Anime</span>
                 </Link>
 
                 {isAuthenticated ? (
