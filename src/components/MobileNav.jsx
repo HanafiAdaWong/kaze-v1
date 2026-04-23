@@ -32,6 +32,7 @@ function MobileNav() {
                     <span>Genre</span>
                 </Link>
 
+                {/* Temporarily disabled Drachin due to API downtime
                 <Link
                     to="/drachin"
                     className={`mobile-nav__link ${location.pathname.startsWith('/drachin') ? 'mobile-nav__link--active' : ''}`}
@@ -41,6 +42,7 @@ function MobileNav() {
                     </div>
                     <span>Drachin</span>
                 </Link>
+                */}
 
                 <Link
                     to="/donghua"

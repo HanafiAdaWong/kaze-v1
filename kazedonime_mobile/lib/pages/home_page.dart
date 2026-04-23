@@ -203,7 +203,7 @@ class _HomePageState extends State<HomePage> {
               SliverList(
                 delegate: SliverChildListDelegate([
                   if (_sections['Ongoing Anime']!.isNotEmpty) _buildSection('Ongoing Anime', _sections['Ongoing Anime']!, 'anime'),
-                  if (_sections['Drama China']!.isNotEmpty) _buildSection('Drama China', _sections['Drama China']!, 'drachin'),
+                  // if (_sections['Drama China']!.isNotEmpty) _buildSection('Drama China', _sections['Drama China']!, 'drachin'),
                   if (_sections['Donghua']!.isNotEmpty) _buildSection('Donghua', _sections['Donghua']!, 'donghua'),
                 ]),
               ),
