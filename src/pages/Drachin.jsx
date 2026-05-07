@@ -108,8 +108,7 @@ function Drachin() {
                 {/* Home Data */}
                 {!loading && !error && !isSearchMode && homeData && (
                     <div>
-                        {/* Latest */}
-                        {homeData.latest?.length > 0 && (
+                        {homeData.length > 0 && (
                             <section className="watch-section">
                                 <div className="watch-section__header">
                                     <h2 className="section-title">
@@ -118,25 +117,8 @@ function Drachin() {
                                     </h2>
                                 </div>
                                 <div className="anime-grid">
-                                    {homeData.latest.map((drachin) => (
-                                        <DrachinCard key={drachin.slug} drachin={drachin} />
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Popular */}
-                        {homeData.popular?.length > 0 && (
-                            <section className="watch-section">
-                                <div className="watch-section__header">
-                                    <h2 className="section-title">
-                                        <TrendingUp size={20} />
-                                        <span>Paling <span className="accent">Populer</span></span>
-                                    </h2>
-                                </div>
-                                <div className="anime-grid">
-                                    {homeData.popular.map((drachin) => (
-                                        <DrachinCard key={drachin.slug} drachin={drachin} />
+                                    {homeData.map((drachin) => (
+                                        <DrachinCard key={drachin.book_id} drachin={drachin} />
                                     ))}
                                 </div>
                             </section>

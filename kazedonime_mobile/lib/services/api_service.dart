@@ -12,6 +12,7 @@ class ApiService {
 
   static const String _jikanBase = 'https://api.jikan.moe/v4';
   static const String _sankaBase = 'https://www.sankavollerei.com/anime';
+  static const String _meloloBase = 'https://melolo-api-azure.vercel.app/api/melolo';
 
   static dynamic _extractData(Response res) {
     final body = res.data;
@@ -71,32 +72,30 @@ class ApiService {
   }
 
   // ============================================
-  // Drachin (Drama China)
+  // Drachin (Drama China - Melolo)
   // ============================================
 
   static Future<dynamic> getDrachinHome() async {
-    final response = await _dio.get('$_sankaBase/drachin/home');
-    return _extractData(response);
+    final response = await _dio.get('$_meloloBase/latest');
+    final body = response.data;
+    return body is Map ? body['books'] : [];
   }
 
-  static Future<dynamic> getDrachinDetail(String slug) async {
-    final response = await _dio.get('$_sankaBase/drachin/detail/$slug');
-    return _extractData(response);
+  static Future<dynamic> getDrachinDetail(String id) async {
+    final response = await _dio.get('$_meloloBase/detail/$id');
+    final body = response.data;
+    return body is Map && body['data'] != null ? body['data']['video_data'] : null;
   }
 
-  static Future<dynamic> getDrachinEpisode(String slug, String index) async {
-    final response = await _dio.get('$_sankaBase/drachin/episode/$slug', queryParameters: {'index': index});
-    return _extractData(response);
+  static Future<dynamic> getDrachinStream(String vid) async {
+    final response = await _dio.get('$_meloloBase/stream/$vid');
+    return response.data;
   }
 
-  static Future<dynamic> getDrachinStream(String id, String episode) async {
-    final response = await _dio.get('$_sankaBase/drachin/watch/$id/$episode');
-    return _extractData(response);
-  }
-
-  static Future<dynamic> searchDrachin(String query, {int page = 1}) async {
-    final response = await _dio.get('$_sankaBase/drachin/search/${Uri.encodeComponent(query)}', queryParameters: {'page': page});
-    return _extractData(response);
+  static Future<dynamic> searchDrachin(String query) async {
+    final response = await _dio.get('$_meloloBase/search', queryParameters: {'query': query});
+    final body = response.data;
+    return body is Map ? body['books'] : [];
   }
 
   static String getDramaboxStreamUrl(String bookId, int index) {

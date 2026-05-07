@@ -53,8 +53,13 @@ function DrachinDetail() {
         )
     }
 
-    const title = detail.title
-    const episodeList = detail.episodes || []
+    const title = detail.series_title || detail.title
+    let poster = detail.series_cover || detail.poster
+    if (poster) {
+        poster = `https://images.weserv.nl/?url=${encodeURIComponent(poster)}&output=webp`
+    }
+    const synopsis = detail.series_intro || detail.synopsis
+    const episodeList = detail.video_list || detail.episodes || []
     const recommendations = detail.recommendations || []
 
     return (
@@ -62,13 +67,13 @@ function DrachinDetail() {
             {/* Hero */}
             <div className="watch-detail-hero">
                 <div className="watch-detail-hero__bg">
-                    <img src={detail.poster} alt="" />
+                    <img src={poster} alt="" referrerPolicy="no-referrer" />
                     <div className="watch-detail-hero__overlay" />
                 </div>
                 <div className="container">
                     <div className="watch-detail-hero__content">
                         <div className="watch-detail-hero__poster">
-                            <img src={detail.poster} alt={title} />
+                            <img src={poster} alt={title} referrerPolicy="no-referrer" />
                         </div>
                         <div className="watch-detail-hero__info">
                             <button
@@ -91,16 +96,16 @@ function DrachinDetail() {
                                 </div>
                             </div>
 
-                            {detail.synopsis && (
+                            {synopsis && (
                                 <p className="watch-detail-synopsis">
-                                    {detail.synopsis}
+                                    {synopsis}
                                 </p>
                             )}
 
                             <div style={{ marginTop: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                                 {episodeList.length > 0 && (
                                     <Link
-                                        to={`/drachin/${slug}/episode/${episodeList[0].index}`}
+                                        to={`/drachin/${slug}/episode/${episodeList[0].vid || episodeList[0].index}`}
                                         className="detail__btn detail__btn--primary"
                                         style={{ display: 'inline-flex' }}
                                     >
@@ -129,8 +134,8 @@ function DrachinDetail() {
                     <div className="episode-grid">
                         {episodeList.map((ep, i) => (
                             <Link
-                                key={ep.index}
-                                to={`/drachin/${slug}/episode/${ep.index}`}
+                                key={ep.vid || ep.index}
+                                to={`/drachin/${slug}/episode/${ep.vid || ep.index}`}
                                 className="episode-card"
                                 style={{ animationDelay: `${Math.min(i, 20) * 0.03}s` }}
                             >
@@ -138,7 +143,10 @@ function DrachinDetail() {
                                     <Play size={14} />
                                 </div>
                                 <div className="episode-card__info">
-                                    <span className="episode-card__title">{ep.episode}</span>
+                                    <span className="episode-card__title">Episode {ep.vid_index || ep.episode || i + 1}</span>
+                                    {ep.duration > 0 && (
+                                        <span className="episode-card__duration">{Math.floor(ep.duration / 60)}:{(ep.duration % 60).toString().padStart(2, '0')}</span>
+                                    )}
                                 </div>
                             </Link>
                         ))}
@@ -155,7 +163,7 @@ function DrachinDetail() {
                     </h2>
                     <div className="anime-grid">
                         {recommendations.map(drachin => (
-                            <DrachinCard key={drachin.slug} drachin={drachin} />
+                            <DrachinCard key={drachin.book_id || drachin.slug} drachin={drachin} />
                         ))}
                     </div>
                 </div>

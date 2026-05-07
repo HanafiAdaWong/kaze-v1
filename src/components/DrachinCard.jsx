@@ -4,15 +4,19 @@ import { Link } from 'react-router-dom'
 function DrachinCard({ drachin }) {
     if (!drachin) return null
 
-    const title = drachin.title
-    const poster = drachin.poster
-    const slug = drachin.slug
-    const eps = drachin.episode_info
+    const title = drachin.book_name || drachin.title
+    let poster = drachin.thumb_url || drachin.poster
+    if (poster) {
+        // Use weserv.nl to proxy and convert .heic images
+        poster = `https://images.weserv.nl/?url=${encodeURIComponent(poster)}&output=webp`
+    }
+    const slug = drachin.book_id || drachin.slug
+    const eps = drachin.show_creation_status || drachin.serial_count || drachin.episode_info
 
     return (
         <Link to={`/drachin/${slug}`} className="anime-card">
             <div className="anime-card__image-container" style={{ aspectRatio: '3 / 4.5' }}>
-                <img src={poster} alt={title} className="anime-card__image" loading="lazy" />
+                <img src={poster} alt={title} className="anime-card__image" loading="lazy" referrerPolicy="no-referrer" />
                 <div className="anime-card__overlay">
                     <div className="anime-card__play">
                         <Play size={24} fill="currentColor" />

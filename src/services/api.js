@@ -134,6 +134,13 @@ async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku
 
         const json = await res.json();
 
+        // Donghua API has a different response format (no status:'success' wrapper)
+        // so we skip validation for donghua source
+        if (source === 'donghua') {
+            setCache(cacheKey, json, CACHE_TTL[cacheTtlKey] || CACHE_TTL.detail);
+            return json;
+        }
+
         // Handle 404 Not Found or "Success but actually an error" (e.g., 522 timeout)
         if (json.statusCode === 404 || (json.status === 'success' && json.data === null && !json.streams)) {
             if (json.error || (json.message && json.message.includes('Error fetching'))) {
@@ -323,34 +330,79 @@ export async function getBatchDetail(batchId) {
 }
 
 // ============================================
-// Drachin (Drama China) API
+// Drachin (Melolo Short Drama API)
+// Uses Vite proxy in development to avoid CORS
 // ============================================
+
+const MELOLO_BASE = import.meta.env.DEV
+    ? '/api/melolo'
+    : 'https://melolo-api-azure.vercel.app/api/melolo';
+
+async function fetchMeloloRaw(endpoint, cacheTtlKey = 'detail') {
+    const cacheKey = `melolo:${endpoint}`;
+    const cached = getCached(cacheKey);
+    if (cached) return cached;
+
+    if (pendingRequests.has(cacheKey)) {
+        return pendingRequests.get(cacheKey);
+    }
+
+    const promise = (async () => {
+        await sankaRateLimiter.waitForSlot();
+        const url = `${MELOLO_BASE}${endpoint}`;
+        const res = await fetchWithTimeout(url, 25000);
+
+        if (res.status === 429) {
+            throw new Error('Rate limit tercapai. Tunggu sebentar lalu coba lagi.');
+        }
+        if (!res.ok) {
+            throw new Error(`Server melolo error: ${res.status}`);
+        }
+
+        const json = await res.json();
+        setCache(cacheKey, json, CACHE_TTL[cacheTtlKey] || CACHE_TTL.detail);
+        return json;
+    })();
+
+    pendingRequests.set(cacheKey, promise);
+    try {
+        return await promise;
+    } finally {
+        pendingRequests.delete(cacheKey);
+    }
+}
 
 export async function getDrachinHome() {
-    const json = await fetchSanka('/drachin/home', 'home', '');
-    return json.data;
+    const json = await fetchMeloloRaw('/latest', 'home');
+    return json.books || [];
 }
 
-export async function searchDrachin(query, page = 1) {
-    const json = await fetchSanka(`/drachin/search/${encodeURIComponent(query)}?page=${page}`, 'search', '');
-    return json.data;
+export async function searchDrachin(query) {
+    const json = await fetchMeloloRaw(`/search?query=${encodeURIComponent(query)}`, 'search');
+    return json.books || [];
 }
 
-export async function getDrachinDetail(slug) {
-    const json = await fetchSanka(`/drachin/detail/${slug}`, 'detail', '');
-    return json.data;
+export async function getDrachinDetail(id) {
+    const json = await fetchMeloloRaw(`/detail/${id}`, 'detail');
+    return json.data?.video_data || null;
 }
 
-export async function getDrachinEpisode(slug, index) {
-    const json = await fetchSanka(`/drachin/episode/${slug}?index=${index}`, 'episode', '');
-    return json.data;
+export async function getDrachinStream(vid) {
+    const json = await fetchMeloloRaw(`/stream/${vid}`, 'server');
+    return json;
 }
+
 
 // ============================================
-// Donghua API (uses raw fetch — different response format)
+// Donghua API
+// Uses Vite proxy in development to avoid CORS
 // ============================================
 
-async function fetchDonghua(endpoint, cacheTtlKey = 'detail') {
+const DONGHUA_BASE = import.meta.env.DEV
+    ? '/api/sanka/donghua'
+    : 'https://www.sankavollerei.com/anime/donghua';
+
+async function fetchDonghuaRaw(endpoint, cacheTtlKey = 'detail') {
     const cacheKey = `donghua:${endpoint}`;
     const cached = getCached(cacheKey);
     if (cached) return cached;
@@ -361,14 +413,14 @@ async function fetchDonghua(endpoint, cacheTtlKey = 'detail') {
 
     const promise = (async () => {
         await sankaRateLimiter.waitForSlot();
-        const url = `https://www.sankavollerei.com/anime/donghua${endpoint}`;
-        const res = await fetchWithTimeout(url, 20000);
+        const url = `${DONGHUA_BASE}${endpoint}`;
+        const res = await fetchWithTimeout(url, 25000);
 
         if (res.status === 429) {
             throw new Error('Rate limit tercapai. Tunggu sebentar lalu coba lagi.');
         }
         if (!res.ok) {
-            throw new Error(`Server error: ${res.status}`);
+            throw new Error(`Server donghua error: ${res.status}`);
         }
 
         const json = await res.json();
@@ -385,21 +437,22 @@ async function fetchDonghua(endpoint, cacheTtlKey = 'detail') {
 }
 
 export async function getDonghuaHome() {
-    const json = await fetchDonghua('/home', 'home');
+    const json = await fetchDonghuaRaw('/home', 'home');
     return json.data || json;
 }
 
 export async function searchDonghua(query) {
-    const json = await fetchDonghua(`/search/${encodeURIComponent(query)}`, 'search');
+    const json = await fetchDonghuaRaw(`/search/${encodeURIComponent(query)}`, 'search');
     return json.data || [];
 }
 
 export async function getDonghuaDetail(slug) {
-    const json = await fetchDonghua(`/detail/${slug}`, 'detail');
+    const json = await fetchDonghuaRaw(`/detail/${slug}`, 'detail');
     return json.data || json;
 }
 
 export async function getDonghuaEpisode(slug) {
-    const json = await fetchDonghua(`/episode/${slug}`, 'episode');
+    const json = await fetchDonghuaRaw(`/episode/${slug}`, 'episode');
     return json;
 }
+

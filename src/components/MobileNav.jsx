@@ -32,17 +32,7 @@ function MobileNav() {
                     <span>Genre</span>
                 </Link>
 
-                {/* Temporarily disabled Drachin due to API downtime
-                <Link
-                    to="/drachin"
-                    className={`mobile-nav__link ${location.pathname.startsWith('/drachin') ? 'mobile-nav__link--active' : ''}`}
-                >
-                    <div className="mobile-nav__icon-wrap">
-                        <Tv size={22} fill={location.pathname.startsWith('/drachin') ? 'currentColor' : 'none'} />
-                    </div>
-                    <span>Drachin</span>
-                </Link>
-                */}
+
 
                 <Link
                     to="/donghua"

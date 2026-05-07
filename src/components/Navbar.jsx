@@ -88,14 +88,6 @@ function Navbar() {
                     >
                         <span><Play size={14} fill="currentColor" /> Anime</span>
                     </Link>
-                    {/* Temporarily disabled Drachin due to API downtime
-                    <Link
-                        to="/drachin"
-                        className={`navbar__link ${location.pathname.startsWith('/drachin') ? 'navbar__link--active' : ''}`}
-                    >
-                        <span><Tv size={14} /> Drachin</span>
-                    </Link>
-                    */}
                     <Link
                         to="/donghua"
                         className={`navbar__link ${location.pathname.startsWith('/donghua') ? 'navbar__link--active' : ''}`}

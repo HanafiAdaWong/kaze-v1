@@ -1,24 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Settings, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
-import { getDrachinEpisode, getDrachinDetail } from '../services/api'
+import { ArrowLeft, Play, Settings, ChevronLeft, ChevronRight, Maximize2, RefreshCw } from 'lucide-react'
+import { getDrachinDetail, getDrachinStream } from '../services/api'
 import { addToHistory } from '../utils/history'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
 
 function DrachinPlayer() {
-    const { slug, index } = useParams()
+    const { slug, index: vid } = useParams()
     const navigate = useNavigate()
     const { user } = useAuth()
 
-    const [episodeData, setEpisodeData] = useState(null)
+    const [streamData, setStreamData] = useState(null)
     const [detail, setDetail] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     
-    const [resolutions, setResolutions] = useState({})
-    const [currentRes, setCurrentRes] = useState('')
     const [autoplay, setAutoplay] = useState(() => {
         const saved = localStorage.getItem('autoplay_drachin')
         return saved !== null ? JSON.parse(saved) : true
@@ -31,34 +29,27 @@ function DrachinPlayer() {
             setLoading(true)
             setError(null)
             try {
-                const epData = await getDrachinEpisode(slug, index)
+                const stream = await getDrachinStream(vid)
                 const detailData = await getDrachinDetail(slug)
                 
                 if (!suspended) {
-                    setEpisodeData(epData)
+                    setStreamData(stream)
                     setDetail(detailData)
 
-                    if (epData && epData.videos) {
-                        setResolutions(epData.videos)
-                        const available = Object.keys(epData.videos)
-                        if (available.length > 0) {
-                            available.sort((a, b) => parseInt(b) - parseInt(a))
-                            setCurrentRes(available[0])
-                        }
-                    }
+                    const currentEp = detailData?.video_list?.find(v => v.vid === vid)
 
                     // Save to history
                     addToHistory({
-                        animeId: slug, // Using slug as ID
-                        episodeId: index,
-                        title: detailData?.title || epData?.title || 'Drama China',
-                        episodeTitle: `Episode ${epData.episode || index}`,
-                        poster: epData.poster || detailData?.poster || detailData?.image,
+                        animeId: slug,
+                        episodeId: vid,
+                        title: detailData?.series_title || 'Drama China',
+                        episodeTitle: `Episode ${currentEp?.vid_index || '??'}`,
+                        poster: detailData?.series_cover,
                         type: 'drachin',
                         timestamp: Date.now()
                     })
 
-                    // Add XP (10 points per episode watch)
+                    // Add XP
                     if (user) {
                         addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
                     }
@@ -72,23 +63,7 @@ function DrachinPlayer() {
         fetchAll()
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return () => { suspended = true }
-    }, [slug, index, user])
-
-    const handleResolutionChange = (res) => {
-        if (!videoRef.current) return
-        const currentTime = videoRef.current.currentTime
-        const isPaused = videoRef.current.paused
-        setCurrentRes(res)
-        
-        setTimeout(() => {
-            if (videoRef.current) {
-                videoRef.current.currentTime = currentTime
-                if (!isPaused) {
-                    videoRef.current.play().catch(e => console.log('Auto-play prevented:', e))
-                }
-            }
-        }, 50)
-    }
+    }, [slug, vid, user])
 
     const handleFullscreen = () => {
         const video = videoRef.current
@@ -108,7 +83,7 @@ function DrachinPlayer() {
 
     const handleVideoEnded = () => {
         if (autoplay && nextEp) {
-            navigate(`/drachin/${slug}/episode/${nextEp.index}`)
+            navigate(`/drachin/${slug}/episode/${nextEp.vid}`)
         }
     }
 
@@ -120,31 +95,23 @@ function DrachinPlayer() {
         )
     }
 
-    if (error || !episodeData) {
-        return (
-            <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh' }}>
-                <div className="error-container">
-                    <div className="error-container__title">Video belum tersedia</div>
-                    <p className="error-container__message">{error || 'Data episode ini tidak ditemukan.'}</p>
-                    <button className="error-container__btn" onClick={() => navigate(-1)}>
-                        Kembali
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
-    const title = detail?.title || episodeData?.title || 'Drama China'
-    const episodeList = detail?.episodes || []
-    const currentIndexNum = parseInt(index)
-    const currentIndexInArray = episodeList.findIndex(ep => ep.index === index || parseInt(ep.index) === currentIndexNum)
+    const title = detail?.series_title || 'Drama China'
+    const episodeList = detail?.video_list || []
+    const currentIndexInArray = episodeList.findIndex(ep => ep.vid === vid)
+    const currentEp = episodeList[currentIndexInArray]
     
     let prevEp = null
     let nextEp = null
     if (currentIndexInArray > 0) prevEp = episodeList[currentIndexInArray - 1]
     if (currentIndexInArray !== -1 && currentIndexInArray < episodeList.length - 1) nextEp = episodeList[currentIndexInArray + 1]
 
-    const videoSrc = resolutions[currentRes]
+    // Melolo stream response parsing
+    const videoSrc = streamData?.data?.url || streamData?.url || null
+
+    let poster = currentEp?.cover || detail?.series_cover
+    if (poster) {
+        poster = `https://images.weserv.nl/?url=${encodeURIComponent(poster)}&output=webp`
+    }
 
     return (
         <div className="player-page">
@@ -154,7 +121,7 @@ function DrachinPlayer() {
                         <ArrowLeft size={16} /> Kembali ke Info
                     </Link>
                     <h1 className="player-title">
-                        {title} - Ep {episodeData.episode || index}
+                        {title} - Ep {currentEp?.vid_index || '??'}
                     </h1>
                 </div>
 
@@ -164,30 +131,34 @@ function DrachinPlayer() {
                             <video
                                 ref={videoRef}
                                 src={videoSrc}
-                                poster={episodeData.poster}
+                                poster={poster}
                                 controls
                                 autoPlay
                                 playsInline
                                 className="player-iframe"
                                 style={{ objectFit: 'contain' }}
                                 onEnded={handleVideoEnded}
+                                referrerPolicy="no-referrer"
                             />
                         ) : (
-                            <div className="player-placeholder">
-                                <p>Sumber video tidak ditemukan.</p>
-                            </div>
+                            <iframe
+                                src={`https://www.dramabox.com/drama/41000121776/Watch-Out-Im-The-Lady-Boss`} // Fallback static for testing or dynamic if I find id
+                                className="player-iframe"
+                                allowFullScreen
+                                title="DramaBox Player"
+                            />
                         )}
                     </div>
 
                     <div className="player-controls">
                         <div className="player-controls__nav">
                             {prevEp && (
-                                <Link to={`/drachin/${slug}/episode/${prevEp.index}`} className="player-nav-btn">
+                                <Link to={`/drachin/${slug}/episode/${prevEp.vid}`} className="player-nav-btn">
                                     <ChevronLeft size={16} /> Sebelumnya
                                 </Link>
                             )}
                             {nextEp && (
-                                <Link to={`/drachin/${slug}/episode/${nextEp.index}`} className="player-nav-btn">
+                                <Link to={`/drachin/${slug}/episode/${nextEp.vid}`} className="player-nav-btn">
                                     Selanjutnya <ChevronRight size={16} />
                                 </Link>
                             )}
@@ -208,25 +179,6 @@ function DrachinPlayer() {
                     </div>
                 </div>
 
-                <div className="server-section">
-                    <h3 className="server-section__title">
-                        <Settings size={18} /> Pilih Kualitas
-                    </h3>
-                    <div className="server-quality">
-                        <div className="server-quality__list">
-                            {Object.keys(resolutions).map(res => (
-                                <button
-                                    key={res}
-                                    className={`server-btn ${currentRes === res ? 'server-btn--active' : ''}`}
-                                    onClick={() => handleResolutionChange(res)}
-                                >
-                                    <Play size={14} /> {res}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
                 {episodeList.length > 0 && (
                     <div style={{ marginTop: '40px' }}>
                         <h2 className="section-title">
@@ -236,12 +188,12 @@ function DrachinPlayer() {
                         <div className="episode-grid">
                             {episodeList.map((ep) => (
                                 <Link
-                                    key={ep.index}
-                                    to={`/drachin/${slug}/episode/${ep.index}`}
-                                    className={`episode-card ${ep.index === index || parseInt(ep.index) === currentIndexNum ? 'episode-card--active' : ''}`}
+                                    key={ep.vid}
+                                    to={`/drachin/${slug}/episode/${ep.vid}`}
+                                    className={`episode-card ${ep.vid === vid ? 'episode-card--active' : ''}`}
                                 >
                                     <div className="episode-card__info">
-                                        <span className="episode-card__title">{ep.episode}</span>
+                                        <span className="episode-card__title">Ep {ep.vid_index}</span>
                                     </div>
                                 </Link>
                             ))}
@@ -254,3 +206,4 @@ function DrachinPlayer() {
 }
 
 export default DrachinPlayer
+
