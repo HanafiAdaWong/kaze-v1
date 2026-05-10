@@ -158,6 +158,9 @@ function Watch() {
                                         <TrendingUp size={20} />
                                         <span>Sedang <span className="accent">Tayang</span></span>
                                     </h2>
+                                    <Link to="/ongoing" className="view-all">
+                                        Lihat Semua
+                                    </Link>
                                 </div>
                                 <div className="anime-grid">
                                     {homeData.ongoing.animeList.map((anime) => (

@@ -23,6 +23,7 @@ import DrachinPlayer from './pages/DrachinPlayer'
 import Donghua from './pages/Donghua'
 import DonghuaDetail from './pages/DonghuaDetail'
 import DonghuaPlayer from './pages/DonghuaPlayer'
+import OngoingAnime from './pages/OngoingAnime'
 
 function App() {
     return (
@@ -64,6 +65,7 @@ function App() {
                     <Route path="/donghua" element={<Donghua />} />
                     <Route path="/donghua/episode/:episodeSlug" element={<DonghuaPlayer />} />
                     <Route path="/donghua/:slug" element={<DonghuaDetail />} />
+                    <Route path="/ongoing" element={<OngoingAnime />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </main>

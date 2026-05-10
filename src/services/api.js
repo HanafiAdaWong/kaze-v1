@@ -107,9 +107,14 @@ async function fetchJikan(endpoint) {
 }
 
 async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku') {
+    const isDev = import.meta.env.DEV;
+    const baseDomain = isDev ? '/api/sanka' : 'https://www.sankavollerei.com/anime';
+
+    // If we are in dev, /api/sanka already maps to /anime, so we don't add /anime again
+    // If we are in prod, we use the full URL with /anime
     const baseUrl = source
-        ? `https://www.sankavollerei.com/anime/${source}`
-        : `https://www.sankavollerei.com/anime`;
+        ? `${baseDomain}/${source}`
+        : `${baseDomain}`;
     const cacheKey = `sanka:${source || 'base'}:${endpoint}`;
     const cached = getCached(cacheKey);
     if (cached) return cached;
@@ -265,6 +270,12 @@ export async function getWatchHome() {
 /** Popular anime list */
 export async function getWatchPopular(page = 1) {
     const json = await fetchSanka(`/popular?page=${page}`, 'home');
+    return json;
+}
+
+/** Ongoing anime list */
+export async function getOngoingAnime(page = 1) {
+    const json = await fetchSanka(`/ongoing-anime?page=${page}`, 'home', '');
     return json;
 }
 

@@ -20,7 +20,6 @@ export default defineConfig({
         secure: false,
         followRedirects: true,
       }
-      }
     }
   }
 })

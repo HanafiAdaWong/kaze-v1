@@ -599,6 +599,27 @@ ol {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.view-all {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  transition: var(--transition-fast);
+}
+
+.view-all:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--accent-primary);
+  transform: translateX(4px);
+}
+
 .navbar__user-name {
   font-size: 0.85rem;
   font-weight: 500;
