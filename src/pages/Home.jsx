@@ -196,7 +196,9 @@ function Home() {
                                 >
                                     Semua Genre
                                 </button>
-                                {genres.map(g => (
+                                {genres
+                                    .filter(g => !['Boys Love', 'Girls Love'].includes(g.name))
+                                    .map(g => (
                                     <button
                                         key={g.mal_id}
                                         className={`genre-chip ${activeGenre === String(g.mal_id) ? 'genre-chip--active' : ''}`}

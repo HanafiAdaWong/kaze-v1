@@ -279,6 +279,18 @@ export async function getOngoingAnime(page = 1) {
     return json;
 }
 
+/** Get watch genres list (Otakudesu) */
+export async function getWatchGenres() {
+    const json = await fetchSanka('/genre', 'home', '');
+    return json.data?.genreList || [];
+}
+
+/** Get watch anime by genre (Otakudesu) */
+export async function getWatchAnimeByGenre(genreId, page = 1) {
+    const json = await fetchSanka(`/genre/${genreId}?page=${page}`, 'home', '');
+    return json;
+}
+
 /** Search anime (Otakudesu) */
 export async function searchWatchAnime(query) {
     const json = await fetchSanka(`/search/${encodeURIComponent(query)}`, 'search', '');

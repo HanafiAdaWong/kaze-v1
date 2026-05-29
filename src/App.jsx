@@ -5,6 +5,7 @@ import MobileNav from './components/MobileNav'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
+import MainHome from './pages/MainHome'
 import AnimeDetail from './pages/AnimeDetail'
 import Watch from './pages/Watch'
 import WatchAnimeDetail from './pages/WatchAnimeDetail'
@@ -15,6 +16,7 @@ import Profile from './pages/Profile'
 import UserProfile from './pages/UserProfile'
 import History from './pages/History'
 import Genres from './pages/Genres'
+import GenreAnime from './pages/GenreAnime'
 import BatchDetail from './pages/BatchDetail'
 import NotFound from './pages/NotFound'
 import Drachin from './pages/Drachin'
@@ -32,7 +34,8 @@ function App() {
             <MobileNav />
             <main>
                 <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<MainHome />} />
+                    <Route path="/sinopsis" element={<Home />} />
                     <Route path="/anime/:id" element={<AnimeDetail />} />
                     <Route path="/login" element={<AuthPage />} />
                     <Route path="/watch" element={<Watch />} />
@@ -58,6 +61,7 @@ function App() {
                         }
                     />
                     <Route path="/genres" element={<Genres />} />
+                    <Route path="/genres/:genreId" element={<GenreAnime />} />
                     <Route path="/batch/:batchId" element={<BatchDetail />} />
                     <Route path="/drachin" element={<Drachin />} />
                     <Route path="/drachin/:slug" element={<DrachinDetail />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags, Tv, Clapperboard } from 'lucide-react'
+import { Search, Play, LogIn, LogOut, User, Heart, Clock, Home as HomeIcon, Tags, Tv, Clapperboard, BookOpen } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function Navbar() {
@@ -74,13 +74,7 @@ function Navbar() {
                         to="/"
                         className={`navbar__link ${location.pathname === '/' ? 'navbar__link--active' : ''}`}
                     >
-                        <span><HomeIcon size={14} /> Sinopsis</span>
-                    </Link>
-                    <Link
-                        to="/genres"
-                        className={`navbar__link ${location.pathname === '/genres' ? 'navbar__link--active' : ''}`}
-                    >
-                        <span><Tags size={14} /> Genre</span>
+                        <span><HomeIcon size={14} /> Beranda</span>
                     </Link>
                     <Link
                         to="/watch"
@@ -89,10 +83,22 @@ function Navbar() {
                         <span><Play size={14} fill="currentColor" /> Anime</span>
                     </Link>
                     <Link
+                        to="/genres"
+                        className={`navbar__link ${location.pathname === '/genres' ? 'navbar__link--active' : ''}`}
+                    >
+                        <span><Tags size={14} /> Genre</span>
+                    </Link>
+                    <Link
                         to="/donghua"
                         className={`navbar__link ${location.pathname.startsWith('/donghua') ? 'navbar__link--active' : ''}`}
                     >
                         <span><Clapperboard size={14} /> Donghua</span>
+                    </Link>
+                    <Link
+                        to="/sinopsis"
+                        className={`navbar__link ${location.pathname === '/sinopsis' ? 'navbar__link--active' : ''}`}
+                    >
+                        <span><BookOpen size={14} /> Sinopsis</span>
                     </Link>
                     {isAuthenticated && (
                         <>

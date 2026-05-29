@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Tags, Play, Heart, Clock, User, Tv, Clapperboard } from 'lucide-react'
+import { Home, Tags, Play, Heart, Clock, User, Tv, Clapperboard, BookOpen } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 function MobileNav() {
@@ -19,7 +19,17 @@ function MobileNav() {
                     <div className="mobile-nav__icon-wrap">
                         <Home size={22} />
                     </div>
-                    <span>Sinopsis</span>
+                    <span>Beranda</span>
+                </Link>
+
+                <Link
+                    to="/watch"
+                    className={`mobile-nav__link ${isWatchActive ? 'mobile-nav__link--active' : ''}`}
+                >
+                    <div className="mobile-nav__icon-wrap">
+                        <Play size={22} fill={isWatchActive ? 'currentColor' : 'none'} />
+                    </div>
+                    <span>Anime</span>
                 </Link>
 
                 <Link
@@ -32,8 +42,6 @@ function MobileNav() {
                     <span>Genre</span>
                 </Link>
 
-
-
                 <Link
                     to="/donghua"
                     className={`mobile-nav__link ${location.pathname.startsWith('/donghua') ? 'mobile-nav__link--active' : ''}`}
@@ -45,13 +53,13 @@ function MobileNav() {
                 </Link>
 
                 <Link
-                    to="/watch"
-                    className={`mobile-nav__link ${isWatchActive ? 'mobile-nav__link--active' : ''}`}
+                    to="/sinopsis"
+                    className={`mobile-nav__link ${isActive('/sinopsis') ? 'mobile-nav__link--active' : ''}`}
                 >
                     <div className="mobile-nav__icon-wrap">
-                        <Play size={22} fill={isWatchActive ? 'currentColor' : 'none'} />
+                        <BookOpen size={22} />
                     </div>
-                    <span>Anime</span>
+                    <span>Sinopsis</span>
                 </Link>
 
                 {isAuthenticated ? (
