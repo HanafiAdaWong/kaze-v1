@@ -26,6 +26,10 @@ import Donghua from './pages/Donghua'
 import DonghuaDetail from './pages/DonghuaDetail'
 import DonghuaPlayer from './pages/DonghuaPlayer'
 import OngoingAnime from './pages/OngoingAnime'
+import AnimasuDetail from './pages/AnimasuDetail'
+import AnimasuPlayer from './pages/AnimasuPlayer'
+import SamehadakuDetail from './pages/SamehadakuDetail'
+import SamehadakuPlayer from './pages/SamehadakuPlayer'
 
 function App() {
     return (
@@ -69,6 +73,10 @@ function App() {
                     <Route path="/donghua" element={<Donghua />} />
                     <Route path="/donghua/episode/:episodeSlug" element={<DonghuaPlayer />} />
                     <Route path="/donghua/:slug" element={<DonghuaDetail />} />
+                    <Route path="/animasu/:slug" element={<AnimasuDetail />} />
+                    <Route path="/animasu/episode/:slug" element={<AnimasuPlayer />} />
+                    <Route path="/samehadaku/:slug" element={<SamehadakuDetail />} />
+                    <Route path="/samehadaku/episode/:slug" element={<SamehadakuPlayer />} />
                     <Route path="/ongoing" element={<OngoingAnime />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>

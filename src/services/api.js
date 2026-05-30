@@ -322,6 +322,21 @@ export async function getAnimasuEpisodeDetail(slug) {
     return json;
 }
 
+export async function getAnimasuHome() {
+    const json = await fetchSanka('/home', 'home', 'animasu');
+    return json;
+}
+
+export async function searchAnimasu(query) {
+    const json = await fetchSanka(`/search/${encodeURIComponent(query)}`, 'search', 'animasu');
+    return json;
+}
+
+export async function getAnimasuDetail(slug) {
+    const json = await fetchSanka(`/detail/${slug}`, 'detail', 'animasu');
+    return json.detail;
+}
+
 /** [BYPASS] Get episode from Anoboy specifically */
 export async function getAnoboyEpisodeDetail(slug) {
     const json = await fetchSanka(`/episode/${slug}`, 'episode', 'anoboy');
@@ -334,6 +349,16 @@ export async function getSamehadakuEpisodeDetail(slug) {
     return json;
 }
 
+export async function searchSamehadaku(query) {
+    const json = await fetchSanka(`/search?q=${encodeURIComponent(query)}`, 'search', 'samehadaku');
+    return json;
+}
+
+export async function getSamehadakuDetail(slug) {
+    const json = await fetchSanka(`/anime/${slug}`, 'detail', 'samehadaku');
+    return json;
+}
+
 /** [BYPASS] Get episode from Otakudesu specifically */
 export async function getOtakudesuEpisodeDetail(slug) {
     const json = await fetchSanka(`/episode/${slug}`, 'episode', '');
@@ -341,8 +366,8 @@ export async function getOtakudesuEpisodeDetail(slug) {
 }
 
 /** Get streaming URL from server */
-export async function getServerUrl(serverId) {
-    const json = await fetchSanka(`/server/${serverId}`, 'server', '');
+export async function getServerUrl(serverId, source = '') {
+    const json = await fetchSanka(`/server/${serverId}`, 'server', source);
     return json.data;
 }
 

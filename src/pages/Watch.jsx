@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Play, TrendingUp, Clock, CheckCircle } from 'lucide-react'
-import { getWatchHome, searchWatchAnime } from '../services/api'
+import { getWatchHome, searchWatchAnime, searchAnimasu, searchSamehadaku } from '../services/api'
 import Loader from '../components/Loader'
 
 function WatchCard({ anime }) {
+    const isAnimasu = anime.source === 'animasu'
+    const isSamehadaku = anime.source === 'samehadaku'
+    const slug = (anime.animeId || anime.id || anime.slug || '').replace(/\/$/, '')
+    const targetUrl = isAnimasu ? `/animasu/${slug}` : isSamehadaku ? `/samehadaku/${slug}` : `/watch/${slug}`
+    
     return (
-        <Link to={`/watch/${anime.animeId || anime.id || anime.slug}`} className="anime-card">
+        <Link to={targetUrl} className="anime-card">
             <div className="anime-card__image-wrap">
                 <img
                     className="anime-card__image"
@@ -20,7 +25,11 @@ function WatchCard({ anime }) {
                     </div>
                 )}
                 {anime.type && (
-                    <div className="anime-card__type">{anime.type}</div>
+                    <div className="anime-card__type">
+                        {isAnimasu && <span style={{ color: '#fbbf24', marginRight: '4px' }}>[Animasu]</span>}
+                        {isSamehadaku && <span style={{ color: '#ef4444', marginRight: '4px' }}>[Samehadaku]</span>}
+                        {anime.type}
+                    </div>
                 )}
                 <div className="anime-card__overlay">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-primary)' }}>
@@ -61,8 +70,37 @@ function Watch() {
         setError(null)
         try {
             if (queryFromUrl) {
-                const result = await searchWatchAnime(queryFromUrl)
-                setSearchResults(result)
+                const [watchRes, animasuRes, samehadakuRes] = await Promise.allSettled([
+                    searchWatchAnime(queryFromUrl),
+                    searchAnimasu(queryFromUrl),
+                    searchSamehadaku(queryFromUrl)
+                ])
+
+                const watchList = watchRes.status === 'fulfilled' && watchRes.value 
+                    ? (watchRes.value.animeList || (Array.isArray(watchRes.value) ? watchRes.value : []))
+                    : []
+                
+                const animasuList = animasuRes.status === 'fulfilled' && animasuRes.value && animasuRes.value.animes
+                    ? animasuRes.value.animes.map(item => ({
+                        ...item,
+                        source: 'animasu',
+                        animeId: item.slug,
+                        status: item.status_or_day,
+                        episodes: item.episode?.replace(' Episode', '') || ''
+                    }))
+                    : []
+                
+                const samehadakuList = samehadakuRes.status === 'fulfilled' && samehadakuRes.value && samehadakuRes.value.data && samehadakuRes.value.data.animeList
+                    ? samehadakuRes.value.data.animeList.map(item => ({
+                        ...item,
+                        source: 'samehadaku',
+                        animeId: item.animeId
+                    }))
+                    : []
+
+                setSearchResults({
+                    animeList: [...watchList, ...animasuList, ...samehadakuList]
+                })
             } else {
                 const data = await getWatchHome()
                 setHomeData(data)

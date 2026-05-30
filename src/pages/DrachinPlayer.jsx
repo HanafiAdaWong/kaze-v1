@@ -6,6 +6,7 @@ import { addToHistory } from '../utils/history'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
+import UnifiedPlayerUI from '../components/UnifiedPlayerUI'
 
 function DrachinPlayer() {
     const { slug, index: vid } = useParams()
@@ -113,95 +114,56 @@ function DrachinPlayer() {
         poster = `https://images.weserv.nl/?url=${encodeURIComponent(poster)}&output=webp`
     }
 
+    const unifiedEpisodesList = episodeList.map(ep => ({
+        id: ep.vid,
+        title: `Episode ${ep.vid_index}`,
+        url: `/drachin/${slug}/episode/${ep.vid}`,
+        isActive: ep.vid === vid
+    }))
+
+    const playerNode = videoSrc ? (
+        <video
+            ref={videoRef}
+            src={videoSrc}
+            poster={poster}
+            controls
+            autoPlay={autoplay}
+            playsInline
+            className="unified-video-iframe"
+            style={{ objectFit: 'contain' }}
+            onEnded={handleVideoEnded}
+            referrerPolicy="no-referrer"
+        />
+    ) : (
+        <iframe
+            src={`https://www.dramabox.com/drama/41000121776/Watch-Out-Im-The-Lady-Boss`}
+            className="unified-video-iframe"
+            allowFullScreen
+            title="DramaBox Player"
+        />
+    )
+
     return (
-        <div className="player-page">
-            <div className="container">
-                <div className="player-header">
-                    <Link to={`/drachin/${slug}`} className="watch-back-btn">
-                        <ArrowLeft size={16} /> Kembali ke Info
-                    </Link>
-                    <h1 className="player-title">
-                        {title} - Ep {currentEp?.vid_index || '??'}
-                    </h1>
-                </div>
-
-                <div className="player-wrapper">
-                    <div className="player-container">
-                        {videoSrc ? (
-                            <video
-                                ref={videoRef}
-                                src={videoSrc}
-                                poster={poster}
-                                controls
-                                autoPlay
-                                playsInline
-                                className="player-iframe"
-                                style={{ objectFit: 'contain' }}
-                                onEnded={handleVideoEnded}
-                                referrerPolicy="no-referrer"
-                            />
-                        ) : (
-                            <iframe
-                                src={`https://www.dramabox.com/drama/41000121776/Watch-Out-Im-The-Lady-Boss`} // Fallback static for testing or dynamic if I find id
-                                className="player-iframe"
-                                allowFullScreen
-                                title="DramaBox Player"
-                            />
-                        )}
-                    </div>
-
-                    <div className="player-controls">
-                        <div className="player-controls__nav">
-                            {prevEp && (
-                                <Link to={`/drachin/${slug}/episode/${prevEp.vid}`} className="player-nav-btn">
-                                    <ChevronLeft size={16} /> Sebelumnya
-                                </Link>
-                            )}
-                            {nextEp && (
-                                <Link to={`/drachin/${slug}/episode/${nextEp.vid}`} className="player-nav-btn">
-                                    Selanjutnya <ChevronRight size={16} />
-                                </Link>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
-                                className={`player-nav-btn ${autoplay ? 'player-nav-btn--active' : ''}`} 
-                                onClick={toggleAutoplay}
-                                title={autoplay ? 'Autoplay Aktif' : 'Autoplay Nonaktif'}
-                            >
-                                <RefreshCw size={16} className={autoplay ? 'spin-slow' : ''} />
-                                <span className="hide-mobile">Autoplay: {autoplay ? 'ON' : 'OFF'}</span>
-                            </button>
-                            <button className="player-nav-btn" onClick={handleFullscreen}>
-                                <Maximize2 size={16} /> <span className="hide-mobile">Layar Penuh</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {episodeList.length > 0 && (
-                    <div style={{ marginTop: '40px' }}>
-                        <h2 className="section-title">
-                            <Play size={20} />
-                            <span>Pilih <span className="accent">Episode</span></span>
-                        </h2>
-                        <div className="episode-grid">
-                            {episodeList.map((ep) => (
-                                <Link
-                                    key={ep.vid}
-                                    to={`/drachin/${slug}/episode/${ep.vid}`}
-                                    className={`episode-card ${ep.vid === vid ? 'episode-card--active' : ''}`}
-                                >
-                                    <div className="episode-card__info">
-                                        <span className="episode-card__title">Ep {ep.vid_index}</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        <UnifiedPlayerUI
+            title={`${title} - Ep ${currentEp?.vid_index || '??'}`}
+            streamUrl={videoSrc}
+            playerLoading={false}
+            serverError={null}
+            servers={[]} // Drachin only has one stream URL usually
+            onServerClick={() => {}}
+            prevEpUrl={prevEp ? `/drachin/${slug}/episode/${prevEp.vid}` : null}
+            nextEpUrl={nextEp ? `/drachin/${slug}/episode/${nextEp.vid}` : null}
+            metadata={{ credit: 'Drachin' }}
+            genres={[]}
+            animeData={{
+                title: title,
+                poster: detail?.series_cover,
+                detailUrl: `/drachin/${slug}`
+            }}
+            episodesList={unifiedEpisodesList}
+            onFullscreen={handleFullscreen}
+            playerNode={playerNode}
+        />
     )
 }
 

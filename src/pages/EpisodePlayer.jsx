@@ -7,6 +7,7 @@ import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getAnimasuEpisodeD
 import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
+import UnifiedPlayerUI from '../components/UnifiedPlayerUI'
 import { translate } from '../utils/translator'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
@@ -72,6 +73,14 @@ function EpisodePlayer() {
             if (streams.length > 0) {
                 setStreamUrl(streams[0].url)
                 setActiveServer('bypass-0')
+            } else if (finalData.server?.qualities?.length > 0) {
+                const firstQuality = finalData.server.qualities.find(q => q.serverList?.length > 0)
+                if (firstQuality) {
+                    const firstServer = firstQuality.serverList[0]
+                    const serverData = await getServerUrl(firstServer.serverId, source)
+                    setStreamUrl(serverData.url)
+                    setActiveServer(firstServer.serverId)
+                }
             }
         } catch (err) {
             setError(`Server ${source} gagal: ${err.message}`)
@@ -143,7 +152,8 @@ function EpisodePlayer() {
                             setActiveServer(first.serverId)
                             setPlayerLoading(true)
                             try {
-                                const serverData = await getServerUrl(first.serverId)
+                                const currentSource = data.source ? data.source.toLowerCase() : ''
+                                const serverData = await getServerUrl(first.serverId, currentSource)
                                 if (!cancelled) {
                                     setStreamUrl(serverData.url)
                                 }
@@ -174,7 +184,8 @@ function EpisodePlayer() {
         setPlayerLoading(true)
         setServerError(null)
         try {
-            const data = await getServerUrl(serverId)
+            const currentSource = episode?.source ? episode.source.toLowerCase() : ''
+            const data = await getServerUrl(serverId, currentSource)
             setStreamUrl(data.url)
             setActiveServer(serverId)
         } catch (err) {
@@ -271,170 +282,99 @@ function EpisodePlayer() {
 
     const allQualities = episode.server?.qualities || []
 
+    // Build unified qualities for sidebar
+    const unifiedQualities = allQualities.map(q => ({
+        title: q.title,
+        servers: q.serverList.map(s => ({
+            id: s.serverId,
+            name: s.title,
+            isActive: activeServer === s.serverId
+        }))
+    }))
+
+    // Build flat servers for controls bar (bypass + default)
+    let flatServers = []
+    if (episode.streams && episode.streams.length > 0) {
+        episode.streams.forEach((stream, i) => {
+            flatServers.push({
+                id: `bypass-${i}`,
+                name: stream.name,
+                isActive: activeServer === `bypass-${i}`
+            })
+        })
+    }
+    if (episode.defaultStreamingUrl) {
+        flatServers.push({ id: 'default', name: 'Player Default', isActive: activeServer === 'default' })
+    }
+
+    const handleUnifiedServerClick = (serverId) => {
+        if (serverId === activeServer) return
+
+        // Handle bypass stream clicks
+        if (serverId.startsWith('bypass-')) {
+            const idx = parseInt(serverId.replace('bypass-', ''))
+            const stream = episode.streams?.[idx]
+            if (stream) {
+                setStreamUrl(stream.url)
+                setActiveServer(serverId)
+                setServerError(null)
+            }
+            return
+        }
+
+        handleServerClick(serverId, '')
+    }
+
+    // Build episodes list from anime detail if available
+    const episodesList = animeDetail?.episodeList?.map(ep => ({
+        id: ep.episodeId,
+        title: `Episode ${ep.title || ep.episodeId}`,
+        url: `/watch/${animeId}/episode/${ep.episodeId}`,
+        isActive: ep.episodeId === episodeId
+    }))?.reverse() || []
+
+    const genres = episode.genreList?.map(g => g.title) || []
+    const synopsis = translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || episode.synopsis?.paragraphs?.[0] || '')
+
     return (
-        <div className="player-page">
-            <div className="container">
-                {/* Header */}
-                <div className="player-header">
-                    <Link to={`/watch/${animeId}`} className="watch-back-btn">
-                        <ArrowLeft size={16} /> Kembali
-                    </Link>
-                    <h1 className="player-title">{episode.title}</h1>
-                </div>
-
-                {/* Video Player */}
-                <div className="player-wrapper">
-                    <div className="player-container">
-                        {playerLoading && (
-                            <div className="player-loading">
-                                <Loader text="Memuat server..." />
-                            </div>
-                        )}
-                        {!playerLoading && serverError && !streamUrl && (
-                            <div className="player-placeholder">
-                                <p style={{ color: 'var(--warning)', marginBottom: '12px' }}>{serverError}</p>
-                                <button className="error-container__btn" onClick={() => activeServer && loadServer(activeServer)}>
-                                    Coba Lagi
-                                </button>
-                            </div>
-                        )}
-                        {!playerLoading && streamUrl ? (
-                            <iframe
-                                id="player-iframe"
-                                src={streamUrl}
-                                title={episode.title}
-                                allowFullScreen
-                                allow="autoplay; encrypted-media; fullscreen"
-                                className="player-iframe"
-                            />
-                        ) : !playerLoading && !serverError && (
-                            <div className="player-placeholder">
-                                <Play size={48} />
-                                <p>Pilih server untuk mulai menonton</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Player Controls Bar */}
-                    <div className="player-controls">
-                        <div className="player-controls__nav">
-                            {episode.hasPrevEpisode && episode.prevEpisode && (
-                                <Link
-                                    to={`/watch/${animeId}/episode/${episode.prevEpisode.episodeId}`}
-                                    className="player-nav-btn"
-                                >
-                                    <ChevronLeft size={16} /> Sebelumnya
-                                </Link>
-                            )}
-                            {episode.hasNextEpisode && episode.nextEpisode && (
-                                <Link
-                                    to={`/watch/${animeId}/episode/${episode.nextEpisode.episodeId}`}
-                                    className="player-nav-btn"
-                                >
-                                    Selanjutnya <ChevronRight size={16} />
-                                </Link>
-                            )}
-                        </div>
-                        <button className="player-nav-btn" onClick={handleFullscreen}>
-                            <Maximize2 size={16} /> Layar Penuh
-                        </button>
-                    </div>
-                </div>
-
-                {/* Server Selection */}
-                <div className="server-section">
-                    <h3 className="server-section__title">
-                        <Monitor size={18} /> Pilih Server
-                    </h3>
-
-                    {/* Alternative Bypass Streams (Animasu style) */}
-                    {episode.streams && episode.streams.length > 0 && (
-                        <div className="server-quality">
-                            <div className="server-quality__label">Alternatif ({episode.source || 'Bypass'})</div>
-                            <div className="server-quality__list">
-                                {episode.streams.map((stream, i) => (
-                                    <button
-                                        key={i}
-                                        className={`server-btn ${activeServer === `bypass-${i}` ? 'server-btn--active' : ''}`}
-                                        onClick={() => {
-                                            setStreamUrl(stream.url)
-                                            setActiveServer(`bypass-${i}`)
-                                            setServerError(null)
-                                        }}
-                                        disabled={playerLoading}
-                                    >
-                                        {stream.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Default server */}
-                    {episode.defaultStreamingUrl && (
-                        <div className="server-quality">
-                            <div className="server-quality__label">Default</div>
-                            <div className="server-quality__list">
-                                <button
-                                    className={`server-btn ${activeServer === 'default' ? 'server-btn--active' : ''}`}
-                                    onClick={() => handleServerClick('default', 'default')}
-                                    disabled={playerLoading}
-                                >
-                                    <Play size={14} /> Player Default
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {allQualities.map((q) => (
-                        <div key={q.title} className="server-quality">
-                            <div className="server-quality__label">
-                                {q.title}
-                            </div>
-                            <div className="server-quality__list">
-                                {q.serverList.map((s) => (
-                                    <button
-                                        key={s.serverId}
-                                        className={`server-btn ${activeServer === s.serverId ? 'server-btn--active' : ''}`}
-                                        onClick={() => handleServerClick(s.serverId, q.title)}
-                                        disabled={playerLoading}
-                                    >
-                                        <Play size={14} /> {s.title}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Episode Info */}
-                {episode.synopsis?.paragraphs?.length > 0 && (
-                    <div className="player-synopsis">
-                        <h3 className="detail__section-title">Sinopsis (Indonesia)</h3>
-                        <p className="detail__synopsis">
-                            {translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || episode.synopsis.paragraphs[0])}
-                        </p>
+        <>
+            <UnifiedPlayerUI
+                title={episode.title}
+                streamUrl={streamUrl}
+                playerLoading={playerLoading}
+                serverError={serverError}
+                servers={flatServers}
+                qualities={unifiedQualities}
+                onServerClick={handleUnifiedServerClick}
+                prevEpUrl={episode.hasPrevEpisode && episode.prevEpisode ? `/watch/${animeId}/episode/${episode.prevEpisode.episodeId}` : null}
+                nextEpUrl={episode.hasNextEpisode && episode.nextEpisode ? `/watch/${animeId}/episode/${episode.nextEpisode.episodeId}` : null}
+                metadata={{
+                    duration: animeDetail?.duration || '',
+                    credit: episode.source || 'Otakudesu',
+                }}
+                genres={genres}
+                animeData={{
+                    title: animeDetail?.title || episode.title,
+                    poster: animeDetail?.poster,
+                    score: animeDetail?.score?.value,
+                    status: animeDetail?.status,
+                    detailUrl: `/watch/${animeId}`
+                }}
+                episodesList={episodesList}
+                onFullscreen={handleFullscreen}
+            />
+            {/* Comments section below the unified player */}
+            <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '0 20px 60px' }}>
+                {synopsis && (
+                    <div className="unified-info-box" style={{ marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px', color: '#fff' }}>Sinopsis</h3>
+                        <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: 1.6 }}>{synopsis}</p>
                     </div>
                 )}
-
-                {/* Genre tags */}
-                {episode.genreList?.length > 0 && (
-                    <div className="detail__genres" style={{ marginBottom: '24px' }}>
-                        {episode.genreList.map(g => (
-                            <span key={g.genreId} className="badge badge--accent">{g.title}</span>
-                        ))}
-                    </div>
-                )}
-
-                {/* Comments */}
-                <div style={{ marginTop: '40px' }}>
-                    <Comments animeId={episodeId} />
-                </div>
+                <Comments animeId={episodeId} />
             </div>
-
-        </div>
+        </>
     )
 }
 
 export default EpisodePlayer
-

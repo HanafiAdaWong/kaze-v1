@@ -22,15 +22,7 @@ function MobileNav() {
                     <span>Beranda</span>
                 </Link>
 
-                <Link
-                    to="/watch"
-                    className={`mobile-nav__link ${isWatchActive ? 'mobile-nav__link--active' : ''}`}
-                >
-                    <div className="mobile-nav__icon-wrap">
-                        <Play size={22} fill={isWatchActive ? 'currentColor' : 'none'} />
-                    </div>
-                    <span>Anime</span>
-                </Link>
+
 
                 <Link
                     to="/genres"

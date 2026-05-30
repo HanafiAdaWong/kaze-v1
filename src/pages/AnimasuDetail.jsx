@@ -1,0 +1,189 @@
+import { useState, useEffect } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Play, Tv, Calendar, Star, Tag, Clock } from 'lucide-react'
+import { getAnimasuDetail } from '../services/api'
+import Loader from '../components/Loader'
+
+function AnimasuDetail() {
+    const { slug } = useParams()
+    const navigate = useNavigate()
+    const [detail, setDetail] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+
+    useEffect(() => {
+        let cancelled = false
+        async function fetchDetail() {
+            setLoading(true)
+            setError(null)
+            try {
+                const data = await getAnimasuDetail(slug)
+                if (!cancelled) {
+                    setDetail(data)
+                }
+            } catch (err) {
+                if (!cancelled) setError(err.message)
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
+        }
+        fetchDetail()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return () => { cancelled = true }
+    }, [slug])
+
+    if (loading) {
+        return (
+            <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader text="Memuat detail Animasu..." />
+            </div>
+        )
+    }
+
+    if (error || !detail) {
+        return (
+            <div style={{ paddingTop: 'var(--navbar-height)', minHeight: '100vh' }}>
+                <div className="error-container">
+                    <div className="error-container__title">Gagal memuat detail</div>
+                    <p className="error-container__message">{error || 'Data tidak ditemukan.'}</p>
+                    <button className="error-container__btn" onClick={() => navigate('/animasu')}>
+                        Kembali ke Animasu
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const title = detail.title || ''
+    const poster = detail.poster || ''
+    const synopsis = detail.synopsis || ''
+    const type = detail.type || 'Anime'
+    const status = detail.status || ''
+    const rating = detail.rating || ''
+    const aired = detail.aired || ''
+    const duration = detail.duration || ''
+    const studio = detail.studio || ''
+    const episodes = detail.episodes || []
+
+    return (
+        <div className="detail" style={{ paddingTop: 'var(--navbar-height)' }}>
+            {/* Hero */}
+            <div className="watch-detail-hero">
+                <div className="watch-detail-hero__bg">
+                    <img src={poster} alt="" />
+                    <div className="watch-detail-hero__overlay" />
+                </div>
+                <div className="container">
+                    <div className="watch-detail-hero__content">
+                        <div className="watch-detail-hero__poster">
+                            <img src={poster} alt={title} />
+                        </div>
+                        <div className="watch-detail-hero__info">
+                            <button
+                                onClick={() => navigate('/animasu')}
+                                className="watch-back-btn"
+                            >
+                                <ArrowLeft size={16} /> Kembali
+                            </button>
+
+                            <div className="detail__badges">
+                                <span className="badge badge--accent">{type}</span>
+                                {status && <span className="badge">{status}</span>}
+                            </div>
+
+                            <h1 className="detail__title">{title}</h1>
+
+                            <div className="watch-detail-meta">
+                                <div className="watch-detail-meta__item">
+                                    <Tv size={16} />
+                                    <span>{episodes.length} Episode</span>
+                                </div>
+                                {rating && rating !== 'N/A' && (
+                                    <div className="watch-detail-meta__item">
+                                        <Star size={16} fill="currentColor" color="#fbbf24" />
+                                        <span>{rating}</span>
+                                    </div>
+                                )}
+                                {aired && aired !== 'N/A' && (
+                                    <div className="watch-detail-meta__item">
+                                        <Calendar size={16} />
+                                        <span>{aired}</span>
+                                    </div>
+                                )}
+                                {duration && duration !== 'N/A' && (
+                                    <div className="watch-detail-meta__item">
+                                        <Clock size={16} />
+                                        <span>{duration}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {detail.genres?.length > 0 && (
+                                <div className="detail__genres" style={{ marginTop: '12px' }}>
+                                    {detail.genres.map(g => (
+                                        <span key={g.slug} className="badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.1)' }}>
+                                            <Tag size={12} /> {g.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {synopsis && (
+                                <p className="watch-detail-synopsis">{synopsis}</p>
+                            )}
+
+                            <div style={{ marginTop: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                {episodes.length > 0 && (
+                                    <Link
+                                        to={`/animasu/episode/${episodes[episodes.length - 1].slug}`}
+                                        className="detail__btn detail__btn--primary"
+                                        style={{ display: 'inline-flex' }}
+                                    >
+                                        <Play size={16} /> Mulai Menonton
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Episodes List */}
+            <div className="container" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+                <h2 className="section-title">
+                    <Play size={20} />
+                    <span>Daftar <span className="accent">Episode</span></span>
+                </h2>
+
+                {episodes.length === 0 ? (
+                    <div className="error-container" style={{ minHeight: '200px' }}>
+                        <div className="error-container__title">Belum ada episode</div>
+                        <p className="error-container__message">Episode belum tersedia untuk anime ini.</p>
+                    </div>
+                ) : (
+                    <div className="episode-grid">
+                        {[...episodes].reverse().map((ep, i) => (
+                            <Link
+                                key={ep.slug}
+                                to={`/animasu/episode/${ep.slug}`}
+                                className="episode-card"
+                                style={{ animationDelay: `${Math.min(i, 20) * 0.03}s` }}
+                            >
+                                <div className="episode-card__number">
+                                    <Play size={14} />
+                                </div>
+                                <div className="episode-card__info">
+                                    <span className="episode-card__title">
+                                        {ep.name ? String(ep.name).replace(/Episode/gi, '').trim() : episodes.length - i}
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+export default AnimasuDetail

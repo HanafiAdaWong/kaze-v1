@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Play, TrendingUp, CheckCircle, ChevronRight, Sparkles, Clapperboard, BookOpen, Clock, Search } from 'lucide-react'
-import { getWatchHome } from '../services/api'
+import { getWatchHome, getDonghuaHome } from '../services/api'
 import Loader from '../components/Loader'
 
 function AnimeCard({ anime, showScore = false }) {
@@ -40,6 +40,33 @@ function AnimeCard({ anime, showScore = false }) {
     )
 }
 
+function DonghuaHomeCard({ donghua }) {
+    // Slug usually has a trailing slash from the API
+    const cleanSlug = donghua.slug.replace(/\/$/, '')
+    return (
+        <Link to={`/donghua/episode/${cleanSlug}`} className="main-home-card">
+            <div className="main-home-card__image-wrap">
+                <img
+                    src={donghua.poster}
+                    alt={donghua.title}
+                    loading="lazy"
+                    className="main-home-card__image"
+                />
+                <div className="main-home-card__overlay">
+                    <Play size={20} fill="currentColor" />
+                </div>
+                <div className="main-home-card__badge main-home-card__badge--ep">
+                    {donghua.current_episode || donghua.type}
+                </div>
+            </div>
+            <div className="main-home-card__info">
+                <p className="main-home-card__title">{donghua.title}</p>
+                <p className="main-home-card__sub">{donghua.status}</p>
+            </div>
+        </Link>
+    )
+}
+
 function SectionHeader({ icon: Icon, title, accent, to }) {
     return (
         <div className="main-home-section-header">
@@ -56,16 +83,22 @@ function SectionHeader({ icon: Icon, title, accent, to }) {
 
 function MainHome() {
     const [homeData, setHomeData] = useState(null)
+    const [donghuaData, setDonghuaData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [searchQuery, setSearchQuery] = useState('')
+    const navigate = useNavigate()
 
     useEffect(() => {
         async function fetchHome() {
             try {
                 setLoading(true)
-                const data = await getWatchHome()
-                setHomeData(data)
+                const [animeRes, donghuaRes] = await Promise.all([
+                    getWatchHome(),
+                    getDonghuaHome(1).catch(() => null) // Fallback if donghua fails
+                ])
+                setHomeData(animeRes)
+                setDonghuaData(donghuaRes)
             } catch (err) {
                 setError(err.message)
             } finally {
@@ -78,7 +111,7 @@ function MainHome() {
     const handleSearch = (e) => {
         e.preventDefault()
         if (searchQuery.trim()) {
-            window.location.href = `/watch?q=${encodeURIComponent(searchQuery.trim())}`
+            navigate(`/watch?q=${encodeURIComponent(searchQuery.trim())}`)
         }
     }
 
@@ -174,6 +207,23 @@ function MainHome() {
                                 <div className="main-home-grid">
                                     {homeData.completed.animeList.slice(0, 12).map(anime => (
                                         <AnimeCard key={anime.animeId} anime={anime} showScore />
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Donghua Terbaru */}
+                        {donghuaData && donghuaData.latest_release?.length > 0 && (
+                            <section className="main-home-section">
+                                <SectionHeader
+                                    icon={Clapperboard}
+                                    title="Donghua"
+                                    accent="Terbaru"
+                                    to="/donghua"
+                                />
+                                <div className="main-home-grid">
+                                    {donghuaData.latest_release.slice(0, 12).map((item, index) => (
+                                        <DonghuaHomeCard key={item.slug || index} donghua={item} />
                                     ))}
                                 </div>
                             </section>

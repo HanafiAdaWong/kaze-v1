@@ -6,6 +6,7 @@ import { addToHistory } from '../utils/history'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
+import UnifiedPlayerUI from '../components/UnifiedPlayerUI'
 
 function DonghuaPlayer() {
     const { episodeSlug } = useParams()
@@ -121,107 +122,47 @@ function DonghuaPlayer() {
         return match ? match[1] : epTitle
     }
 
+    const flatServers = servers.map(srv => ({
+        id: srv.url, // URL as ID since donghua servers don't always have IDs
+        name: srv.name,
+        isActive: activeServer?.url === srv.url,
+        url: srv.url
+    }))
+
+    const handleServerClick = (id) => {
+        const server = servers.find(s => s.url === id)
+        if (server) setActiveServer(server)
+    }
+
+    const unifiedEpisodesList = sortedEpisodes.map(ep => ({
+        id: ep.slug,
+        title: `Episode ${getEpNumber(ep.episode)}`,
+        url: `/donghua/episode/${ep.slug}`,
+        isActive: ep.slug === episodeSlug
+    }))
+
     return (
-        <div className="player-page">
-            <div className="container">
-                <div className="player-header">
-                    <Link to={`/donghua/${donghuaSlug}`} className="watch-back-btn">
-                        <ArrowLeft size={16} /> Kembali ke Info
-                    </Link>
-                    <h1 className="player-title">
-                        {donghuaTitle} - {getEpNumber(episodeTitle)}
-                    </h1>
-                </div>
-
-                <div className="player-wrapper">
-                    <div className="player-container">
-                        {activeServer?.url ? (
-                            <iframe
-                                id="player-iframe"
-                                src={activeServer.url}
-                                title={episodeTitle}
-                                allowFullScreen
-                                allow="autoplay; fullscreen; encrypted-media"
-                                className="player-iframe"
-                            />
-                        ) : (
-                            <div className="player-placeholder">
-                                <p>Sumber video tidak ditemukan.</p>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="player-controls">
-                        <div className="player-controls__nav">
-                            {nav.prev?.slug && (
-                                <Link to={`/donghua/episode/${nav.prev.slug}`} className="player-nav-btn">
-                                    <ChevronLeft size={16} /> Sebelumnya
-                                </Link>
-                            )}
-                            {nav.next?.slug && (
-                                <Link to={`/donghua/episode/${nav.next.slug}`} className="player-nav-btn">
-                                    Selanjutnya <ChevronRight size={16} />
-                                </Link>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
-                                className={`player-nav-btn ${autoplay ? 'player-nav-btn--active' : ''}`} 
-                                onClick={toggleAutoplay}
-                                title={autoplay ? 'Autoplay Aktif' : 'Autoplay Nonaktif'}
-                            >
-                                <RefreshCw size={16} className={autoplay ? 'spin-slow' : ''} />
-                                <span className="hide-mobile">Autoplay: {autoplay ? 'ON' : 'OFF'}</span>
-                            </button>
-                            <button className="player-nav-btn" onClick={handleFullscreen}>
-                                <Maximize2 size={16} /> <span className="hide-mobile">Layar Penuh</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="server-section">
-                    <h3 className="server-section__title">
-                        <MonitorPlay size={18} /> Pilih Server
-                    </h3>
-                    <div className="server-quality">
-                        <div className="server-quality__list">
-                            {servers.map((srv, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`server-btn ${activeServer?.url === srv.url ? 'server-btn--active' : ''}`}
-                                    onClick={() => setActiveServer(srv)}
-                                >
-                                    <Play size={14} /> {srv.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {sortedEpisodes.length > 0 && (
-                    <div style={{ marginTop: '40px' }}>
-                        <h2 className="section-title">
-                            <Play size={20} />
-                            <span>Pilih <span className="accent">Episode</span></span>
-                        </h2>
-                        <div className="episode-grid">
-                            {sortedEpisodes.map((ep) => (
-                                <Link
-                                    key={ep.slug}
-                                    to={`/donghua/episode/${ep.slug}`}
-                                    className={`episode-card ${ep.slug === episodeSlug ? 'episode-card--active' : ''}`}
-                                >
-                                    <div className="episode-card__info">
-                                        <span className="episode-card__title">{getEpNumber(ep.episode)}</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        <UnifiedPlayerUI
+            title={`${donghuaTitle} - ${getEpNumber(episodeTitle)}`}
+            streamUrl={activeServer?.url || null}
+            playerLoading={false}
+            serverError={null}
+            servers={flatServers}
+            onServerClick={handleServerClick}
+            prevEpUrl={nav.prev?.slug ? `/donghua/episode/${nav.prev.slug}` : null}
+            nextEpUrl={nav.next?.slug ? `/donghua/episode/${nav.next.slug}` : null}
+            metadata={{ credit: 'Donghua' }}
+            genres={donghuaDetails.genres || []}
+            animeData={{
+                title: donghuaTitle,
+                poster: donghuaDetails.poster || donghuaDetails.image,
+                score: donghuaDetails.score || donghuaDetails.rating,
+                status: donghuaDetails.status,
+                detailUrl: `/donghua/${donghuaSlug}`
+            }}
+            episodesList={unifiedEpisodesList}
+            onFullscreen={handleFullscreen}
+        />
     )
 }
 

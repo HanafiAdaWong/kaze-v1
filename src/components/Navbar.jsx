@@ -22,12 +22,14 @@ function Navbar() {
         setShowUserMenu(false)
     }, [location.pathname])
 
-    // Sync query from URL params (only for home page search)
+    // Sync query from URL params (only for search results page)
     useEffect(() => {
-        if (location.pathname === '/') {
+        if (location.pathname === '/watch') {
             const params = new URLSearchParams(location.search)
             const q = params.get('q') || ''
             setQuery(q)
+        } else {
+            setQuery('')
         }
     }, [location.search, location.pathname])
 
@@ -35,9 +37,7 @@ function Navbar() {
         e.preventDefault()
         const trimmed = query.trim()
         if (trimmed) {
-            navigate(`/?q=${encodeURIComponent(trimmed)}`)
-        } else {
-            navigate('/')
+            navigate(`/watch?q=${encodeURIComponent(trimmed)}`)
         }
     }
 
@@ -76,12 +76,7 @@ function Navbar() {
                     >
                         <span><HomeIcon size={14} /> Beranda</span>
                     </Link>
-                    <Link
-                        to="/watch"
-                        className={`navbar__link ${isWatchSection ? 'navbar__link--active' : ''}`}
-                    >
-                        <span><Play size={14} fill="currentColor" /> Anime</span>
-                    </Link>
+
                     <Link
                         to="/genres"
                         className={`navbar__link ${location.pathname === '/genres' ? 'navbar__link--active' : ''}`}

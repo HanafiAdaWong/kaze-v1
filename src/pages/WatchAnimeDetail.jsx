@@ -214,7 +214,7 @@ function WatchAnimeDetail() {
                                     <Play size={14} />
                                 </div>
                                 <div className="episode-card__info">
-                                    <span className="episode-card__title">{ep.eps}</span>
+                                    <span className="episode-card__title">{ep.eps ? String(ep.eps).replace(/Episode/gi, '').trim() : episodeList.length - i}</span>
                                 </div>
                             </Link>
                         ))}
