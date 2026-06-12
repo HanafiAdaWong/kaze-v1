@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Play, TrendingUp, CheckCircle, ChevronRight, Sparkles, Clapperboard, BookOpen, Clock, Search } from 'lucide-react'
 import { getWatchHome, getDonghuaHome } from '../services/api'
 import Loader from '../components/Loader'
+import OngoingAnimeSlider from '../components/OngoingAnimeSlider'
 
 function AnimeCard({ anime, showScore = false }) {
     return (
@@ -148,7 +149,7 @@ function MainHome() {
                     </form>
 
                     {/* Quick Links */}
-                    <div className="main-home-hero__links">
+                    <div className="main-home-hero__links" style={{ marginBottom: '40px' }}>
                         <Link to="/watch" className="main-home-hero__link main-home-hero__link--primary">
                             <Play size={16} fill="currentColor" /> Nonton Anime
                         </Link>
@@ -162,6 +163,16 @@ function MainHome() {
                             <BookOpen size={16} /> Sinopsis
                         </Link>
                     </div>
+
+                    {/* Ongoing Anime Slider */}
+                    {!loading && homeData?.ongoing?.animeList?.length > 0 && (
+                        <div className="hero__slider-wrap" style={{ marginTop: '20px' }}>
+                            <h3 className="section-subtitle" style={{ marginBottom: '16px', fontSize: '0.9rem', opacity: 0.8, textAlign: 'left' }}>
+                                🔥 Sedang Tayang & Baru Update
+                            </h3>
+                            <OngoingAnimeSlider animes={homeData.ongoing.animeList} />
+                        </div>
+                    )}
                 </div>
             </section>
 
