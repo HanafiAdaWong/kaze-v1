@@ -44,16 +44,6 @@ function MobileNav() {
                     <span>Donghua</span>
                 </Link>
 
-                <Link
-                    to="/sinopsis"
-                    className={`mobile-nav__link ${isActive('/sinopsis') ? 'mobile-nav__link--active' : ''}`}
-                >
-                    <div className="mobile-nav__icon-wrap">
-                        <BookOpen size={22} />
-                    </div>
-                    <span>Sinopsis</span>
-                </Link>
-
                 {isAuthenticated ? (
                     <>
                         <Link

@@ -8,7 +8,7 @@ function NotFound() {
                 Oops! Halaman ini tidak ditemukan di dunia anime manapun.
             </p>
             <Link to="/" className="not-found__btn">
-                Ke Sinopsis
+                Ke Beranda
             </Link>
         </div>
     )
