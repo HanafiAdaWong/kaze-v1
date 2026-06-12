@@ -1,13 +1,14 @@
-// Vercel Serverless Function — Proxy to Melolo API
-// Catches all /api/melolo/* requests and forwards them
+// Vercel Serverless Function — Proxy to Sanka Vollerei API
+// Forwards all /api/sanka/* requests to sankavollerei.com/anime/*
 
 export default async function handler(req, res) {
-    const { path } = req.query;
-    const targetPath = Array.isArray(path) ? path.join('/') : path || '';
-    const queryString = new URL(req.url, `http://${req.headers.host}`).search || '';
-    const targetUrl = `https://melolo-api-azure.vercel.app/api/melolo/${targetPath}${queryString}`;
-
     try {
+        const urlObj = new URL(req.url, `http://${req.headers.host}`);
+        const pathname = urlObj.pathname; // e.g. "/api/sanka/home" or "/api/sanka/samehadaku/home"
+        const targetPath = pathname.replace(/^\/api\/sanka/, ''); // e.g. "/home" or "/samehadaku/home"
+        const queryString = urlObj.search || '';
+        const targetUrl = `https://www.sankavollerei.com/anime${targetPath}${queryString}`;
+
         const response = await fetch(targetUrl, {
             method: req.method || 'GET',
             headers: {
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
 
         const data = await response.text();
 
+        // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

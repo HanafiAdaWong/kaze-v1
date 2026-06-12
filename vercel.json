@@ -2,11 +2,11 @@
     "rewrites": [
         {
             "source": "/api/sanka/:path*",
-            "destination": "/api/sanka/:path*"
+            "destination": "/api/sanka.js"
         },
         {
             "source": "/api/melolo/:path*",
-            "destination": "/api/melolo/:path*"
+            "destination": "/api/melolo.js"
         },
         {
             "source": "/(.*)",
