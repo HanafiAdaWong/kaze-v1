@@ -4,6 +4,7 @@ import { Play, TrendingUp, CheckCircle, ChevronRight, Sparkles, Clapperboard, Bo
 import { getWatchHome, getDonghuaHome } from '../services/api'
 import Loader from '../components/Loader'
 import OngoingAnimeSlider from '../components/OngoingAnimeSlider'
+import HeroBanner from '../components/HeroBanner'
 
 function AnimeCard({ anime, showScore = false }) {
     return (
@@ -120,7 +121,7 @@ function MainHome() {
         <div className="main-home">
             {/* === HERO === */}
             <section className="main-home-hero">
-                <div className="main-home-hero__bg" />
+                <HeroBanner />
                 <div className="container main-home-hero__content">
                     <div className="main-home-hero__tag">
                         <Sparkles size={14} />
