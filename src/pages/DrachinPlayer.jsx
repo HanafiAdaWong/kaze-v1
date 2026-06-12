@@ -153,7 +153,7 @@ function DrachinPlayer() {
             onServerClick={() => {}}
             prevEpUrl={prevEp ? `/drachin/${slug}/episode/${prevEp.vid}` : null}
             nextEpUrl={nextEp ? `/drachin/${slug}/episode/${nextEp.vid}` : null}
-            metadata={{ credit: 'Drachin' }}
+            metadata={{}}
             genres={[]}
             animeData={{
                 title: title,

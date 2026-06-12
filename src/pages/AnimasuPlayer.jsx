@@ -113,7 +113,7 @@ function AnimasuPlayer() {
             serverError={null}
             servers={flatServers}
             onServerClick={handleServerClick}
-            metadata={{ credit: 'Animasu' }}
+            metadata={{}}
             animeData={{
                 title: title, // Animasu episode detail doesn't include full anime details yet
                 detailUrl: navigate(-1) // fallback just go back

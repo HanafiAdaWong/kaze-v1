@@ -151,7 +151,7 @@ function DonghuaPlayer() {
             onServerClick={handleServerClick}
             prevEpUrl={nav.prev?.slug ? `/donghua/episode/${nav.prev.slug}` : null}
             nextEpUrl={nav.next?.slug ? `/donghua/episode/${nav.next.slug}` : null}
-            metadata={{ credit: 'Donghua' }}
+            metadata={{}}
             genres={donghuaDetails.genres || []}
             animeData={{
                 title: donghuaTitle,

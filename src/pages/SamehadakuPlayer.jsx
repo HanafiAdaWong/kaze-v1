@@ -193,7 +193,6 @@ function SamehadakuPlayer() {
             nextEpUrl={hasNext && nextEp?.episodeId ? `/samehadaku/episode/${nextEp.episodeId}` : null}
             metadata={{
                 duration: episode.duration || 'N/A',
-                credit: 'Samehadaku',
             }}
             genres={episode.genreList?.map(g => g.title) || []}
             animeData={{

@@ -104,9 +104,7 @@ export default function UnifiedPlayerUI({
                             {metadata.duration && (
                                 <span><Monitor size={14} /> Duration: {metadata.duration}</span>
                             )}
-                            {metadata.credit && (
-                                <span><Info size={14} /> Credit: {metadata.credit}</span>
-                            )}
+
                             {metadata.quality && (
                                 <span><Video size={14} /> Quality: {metadata.quality}</span>
                             )}

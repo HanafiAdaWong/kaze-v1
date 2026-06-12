@@ -350,7 +350,6 @@ function EpisodePlayer() {
                 nextEpUrl={episode.hasNextEpisode && episode.nextEpisode ? `/watch/${animeId}/episode/${episode.nextEpisode.episodeId}` : null}
                 metadata={{
                     duration: animeDetail?.duration || '',
-                    credit: episode.source || 'Otakudesu',
                 }}
                 genres={genres}
                 animeData={{
