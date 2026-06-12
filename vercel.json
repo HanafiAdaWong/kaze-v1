@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/api/sanka/:path*",
+            "destination": "/api/sanka/:path*"
+        },
+        {
+            "source": "/api/melolo/:path*",
+            "destination": "/api/melolo/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

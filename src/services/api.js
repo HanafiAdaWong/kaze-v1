@@ -140,11 +140,9 @@ async function fetchJikan(endpoint) {
 
 
 async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku') {
-    const isDev = import.meta.env.DEV;
-    const baseDomain = isDev ? '/api/sanka' : 'https://www.sankavollerei.com/anime';
+    const baseDomain = '/api/sanka';
 
-    // If we are in dev, /api/sanka already maps to /anime, so we don't add /anime again
-    // If we are in prod, we use the full URL with /anime
+    // Both dev (Vite proxy) and prod (Vercel serverless) use /api/sanka
     const baseUrl = source
         ? `${baseDomain}/${source}`
         : `${baseDomain}`;
@@ -415,9 +413,7 @@ export async function getBatchDetail(batchId) {
 // Uses Vite proxy in development to avoid CORS
 // ============================================
 
-const MELOLO_BASE = import.meta.env.DEV
-    ? '/api/melolo'
-    : 'https://melolo-api-azure.vercel.app/api/melolo';
+const MELOLO_BASE = '/api/melolo';
 
 async function fetchMeloloRaw(endpoint, cacheTtlKey = 'detail') {
     const cacheKey = `melolo:${endpoint}`;
@@ -479,9 +475,7 @@ export async function getDrachinStream(vid) {
 // Uses Vite proxy in development to avoid CORS
 // ============================================
 
-const DONGHUA_BASE = import.meta.env.DEV
-    ? '/api/sanka/donghua'
-    : 'https://www.sankavollerei.com/anime/donghua';
+const DONGHUA_BASE = '/api/sanka/donghua';
 
 async function fetchDonghuaRaw(endpoint, cacheTtlKey = 'detail') {
     const cacheKey = `donghua:${endpoint}`;
