@@ -86,25 +86,58 @@ async function fetchWithTimeout(url, timeoutMs = 15000) {
     }
 }
 
+// Queue for Jikan requests to prevent rate limit (max 1 request per 1200ms)
+const jikanQueue = {
+    lastRequestTime: 0,
+    minInterval: 1200,
+
+    async waitForSlot() {
+        const now = Date.now();
+        const elapsed = now - this.lastRequestTime;
+        if (elapsed < this.minInterval) {
+            const waitTime = this.minInterval - elapsed;
+            await new Promise(r => setTimeout(r, waitTime));
+        }
+        this.lastRequestTime = Date.now();
+    }
+};
+
 async function fetchJikan(endpoint) {
     const cacheKey = `jikan:${endpoint}`;
     const cached = getCached(cacheKey);
     if (cached) return cached;
 
-    const res = await fetchWithTimeout(`${JIKAN_BASE}${endpoint}`);
-    if (res.status === 429) {
-        await new Promise(r => setTimeout(r, 1500));
-        const retry = await fetchWithTimeout(`${JIKAN_BASE}${endpoint}`);
-        if (!retry.ok) throw new Error(`API Error: ${retry.status}`);
-        const json = await retry.json();
-        setCache(cacheKey, json, CACHE_TTL.jikan);
-        return json;
+    let retries = 3;
+    let delay = 1500;
+
+    while (retries > 0) {
+        await jikanQueue.waitForSlot();
+        try {
+            const res = await fetchWithTimeout(`${JIKAN_BASE}${endpoint}`);
+            if (res.status === 429) {
+                retries--;
+                if (retries === 0) throw new Error('API Error: 429 (Too Many Requests)');
+                const jitter = Math.random() * 1000;
+                await new Promise(r => setTimeout(r, delay + jitter));
+                delay *= 2;
+                continue;
+            }
+            if (!res.ok) throw new Error(`API Error: ${res.status}`);
+            const json = await res.json();
+            setCache(cacheKey, json, CACHE_TTL.jikan);
+            return json;
+        } catch (err) {
+            if (retries === 1) {
+                throw err;
+            }
+            retries--;
+            const jitter = Math.random() * 1000;
+            await new Promise(r => setTimeout(r, delay + jitter));
+            delay *= 2;
+        }
     }
-    if (!res.ok) throw new Error(`API Error: ${res.status}`);
-    const json = await res.json();
-    setCache(cacheKey, json, CACHE_TTL.jikan);
-    return json;
 }
+
 
 async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku') {
     const isDev = import.meta.env.DEV;
