@@ -22,24 +22,7 @@ function Footer() {
                         </a>
                     </div>
 
-                    <div className="footer__links">
-                        <a
-                            href="https://jikan.moe"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="footer__link"
-                        >
-                            Jikan API
-                        </a>
-                        <a
-                            href="https://myanimelist.net"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="footer__link"
-                        >
-                            MyAnimeList
-                        </a>
-                    </div>
+
                 </div>
             </div>
         </footer>
