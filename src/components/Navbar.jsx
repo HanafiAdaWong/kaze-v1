@@ -89,12 +89,6 @@ function Navbar() {
                     >
                         <span><Clapperboard size={14} /> Donghua</span>
                     </Link>
-                    <Link
-                        to="/sinopsis"
-                        className={`navbar__link ${location.pathname === '/sinopsis' ? 'navbar__link--active' : ''}`}
-                    >
-                        <span><BookOpen size={14} /> Sinopsis</span>
-                    </Link>
                     {isAuthenticated && (
                         <>
                             <Link to="/mylist" className={`navbar__link ${location.pathname === '/mylist' ? 'navbar__link--active' : ''}`}>

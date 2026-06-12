@@ -4,7 +4,6 @@ import Navbar from './components/Navbar'
 import MobileNav from './components/MobileNav'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
-import Home from './pages/Home'
 import MainHome from './pages/MainHome'
 import AnimeDetail from './pages/AnimeDetail'
 import Watch from './pages/Watch'
@@ -39,7 +38,6 @@ function App() {
             <main>
                 <Routes>
                     <Route path="/" element={<MainHome />} />
-                    <Route path="/sinopsis" element={<Home />} />
                     <Route path="/anime/:id" element={<AnimeDetail />} />
                     <Route path="/login" element={<AuthPage />} />
                     <Route path="/watch" element={<Watch />} />

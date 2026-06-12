@@ -160,9 +160,6 @@ function MainHome() {
                         <Link to="/donghua" className="main-home-hero__link">
                             <Clapperboard size={16} /> Donghua
                         </Link>
-                        <Link to="/sinopsis" className="main-home-hero__link">
-                            <BookOpen size={16} /> Sinopsis
-                        </Link>
                     </div>
 
                     {/* Ongoing Anime Slider */}
