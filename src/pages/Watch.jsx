@@ -26,8 +26,7 @@ function WatchCard({ anime }) {
                 )}
                 {anime.type && (
                     <div className="anime-card__type">
-                        {isAnimasu && <span style={{ color: '#fbbf24', marginRight: '4px' }}>[Animasu]</span>}
-                        {isSamehadaku && <span style={{ color: '#ef4444', marginRight: '4px' }}>[Samehadaku]</span>}
+                        <span style={{ color: 'var(--accent-primary)', marginRight: '4px' }}>[Kazedonime]</span>
                         {anime.type}
                     </div>
                 )}
