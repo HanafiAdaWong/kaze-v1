@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Play, Star, Calendar, Film, Clock, Tv, Download } from 'lucide-react'
-import { getWatchAnimeDetail } from '../services/api'
+import { ArrowLeft, Play, Star, Calendar, Film, Clock, Tv, Download, BookOpen, Users, ExternalLink, BarChart3, Heart } from 'lucide-react'
+import { getWatchAnimeDetail, searchAnime, getAnimeCharacters, getAnimeRecommendations } from '../services/api'
+import AnimeCard from '../components/AnimeCard'
 import Loader from '../components/Loader'
 import FavoriteButton from '../components/FavoriteButton'
 import { translate } from '../utils/translator'
@@ -16,6 +17,10 @@ function WatchAnimeDetail() {
     const [error, setError] = useState(null)
     const [translatedSynopsis, setTranslatedSynopsis] = useState('')
     const [translating, setTranslating] = useState(false)
+    // MAL / Jikan enrichment
+    const [malAnime, setMalAnime] = useState(null)
+    const [malCharacters, setMalCharacters] = useState([])
+    const [malRecommendations, setMalRecommendations] = useState([])
 
     useEffect(() => {
         let cancelled = false
@@ -38,6 +43,33 @@ function WatchAnimeDetail() {
                             }
                         })
                     }
+
+                    // Search Jikan/MAL for enrichment data (delayed to avoid rate limit)
+                    const searchTitle = data.english || data.synonyms || data.title || ''
+                    if (searchTitle) {
+                        setTimeout(async () => {
+                            try {
+                                const malResult = await searchAnime(searchTitle, 1)
+                                const firstMatch = malResult?.data?.[0]
+                                if (!cancelled && firstMatch) {
+                                    setMalAnime(firstMatch)
+                                    // Fetch characters with another delay
+                                    setTimeout(async () => {
+                                        try {
+                                            const chars = await getAnimeCharacters(firstMatch.mal_id)
+                                            if (!cancelled) setMalCharacters(chars?.slice(0, 12) || [])
+                                        } catch { }
+                                        setTimeout(async () => {
+                                            try {
+                                                const recs = await getAnimeRecommendations(firstMatch.mal_id)
+                                                if (!cancelled) setMalRecommendations(recs?.slice(0, 6) || [])
+                                            } catch { }
+                                        }, 1500)
+                                    }, 1500)
+                                }
+                            } catch { }
+                        }, 1000)
+                    }
                 }
             } catch (err) {
                 if (!cancelled) setError(err.message)
@@ -49,6 +81,7 @@ function WatchAnimeDetail() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return () => { cancelled = true }
     }, [animeId, page])
+
 
     if (loading) {
         return (
@@ -265,6 +298,239 @@ function WatchAnimeDetail() {
                         </div>
                     )}
                 </div>
+
+                {/* ===== MyAnimeList Enrichment Section ===== */}
+                {malAnime && (
+                    <div style={{ marginTop: '60px' }}>
+                        {/* MAL Stats */}
+                        <div className="detail__stats" style={{ marginBottom: '32px' }}>
+                            {malAnime.score && (
+                                <div className="detail__stat">
+                                    <div className="detail__stat-value detail__stat-value--score">★ {malAnime.score}</div>
+                                    <div className="detail__stat-label">
+                                        {malAnime.scored_by ? `${(malAnime.scored_by / 1000).toFixed(0)}K pengguna` : 'Skor'}
+                                    </div>
+                                </div>
+                            )}
+                            {malAnime.rank && (
+                                <div className="detail__stat">
+                                    <div className="detail__stat-value">#{malAnime.rank}</div>
+                                    <div className="detail__stat-label">Peringkat</div>
+                                </div>
+                            )}
+                            {malAnime.popularity && (
+                                <div className="detail__stat">
+                                    <div className="detail__stat-value">#{malAnime.popularity}</div>
+                                    <div className="detail__stat-label">Popularitas</div>
+                                </div>
+                            )}
+                            {malAnime.members && (
+                                <div className="detail__stat">
+                                    <div className="detail__stat-value">{(malAnime.members / 1000).toFixed(0)}K</div>
+                                    <div className="detail__stat-label">Anggota</div>
+                                </div>
+                            )}
+                            {malAnime.favorites && (
+                                <div className="detail__stat">
+                                    <div className="detail__stat-value">{(malAnime.favorites / 1000).toFixed(1)}K</div>
+                                    <div className="detail__stat-label">Favorit</div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* MAL 2-column layout */}
+                        <div className="detail__grid">
+                            {/* Left Column */}
+                            <div>
+                                {/* Sinopsis dari MAL */}
+                                {malAnime.synopsis && (
+                                    <div className="detail__section">
+                                        <h2 className="detail__section-title">
+                                            <BookOpen size={18} /> Sinopsis (Indonesia)
+                                        </h2>
+                                        <p className="detail__synopsis">
+                                            {malAnime.synopsis}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Trailer */}
+                                {malAnime.trailer?.embed_url && (
+                                    <div className="detail__section">
+                                        <h2 className="detail__section-title">
+                                            <Play size={18} /> Trailer
+                                        </h2>
+                                        <div className="detail__trailer">
+                                            <iframe
+                                                src={malAnime.trailer.embed_url.replace('autoplay=1', 'autoplay=0')}
+                                                title="Trailer"
+                                                allowFullScreen
+                                                allow="encrypted-media"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Characters */}
+                                {malCharacters.length > 0 && (
+                                    <div className="detail__section">
+                                        <h2 className="detail__section-title">
+                                            <Users size={18} /> Karakter
+                                        </h2>
+                                        <div className="characters-grid">
+                                            {malCharacters.map((c, i) => (
+                                                <div
+                                                    key={c.character?.mal_id || i}
+                                                    className="character-card"
+                                                    style={{ animationDelay: `${i * 0.05}s` }}
+                                                >
+                                                    <img
+                                                        className="character-card__image"
+                                                        src={c.character?.images?.webp?.image_url || c.character?.images?.jpg?.image_url}
+                                                        alt={c.character?.name}
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="character-card__name">{c.character?.name}</div>
+                                                    <div className="character-card__role">{c.role}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Recommendations */}
+                                {malRecommendations.length > 0 && (
+                                    <div className="detail__section">
+                                        <h2 className="section-title">
+                                            Kamu Mungkin <span className="accent">Suka</span>
+                                        </h2>
+                                        <div className="anime-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+                                            {malRecommendations.map((rec, i) => (
+                                                <AnimeCard
+                                                    key={rec.entry?.mal_id || i}
+                                                    anime={rec.entry}
+                                                    index={i}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Sidebar */}
+                            <div>
+                                {/* Info Card */}
+                                <div className="detail__sidebar-card">
+                                    <h3>Informasi</h3>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Tipe</span>
+                                        <span className="detail__info-value">{malAnime.type || '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Episode</span>
+                                        <span className="detail__info-value">{malAnime.episodes ?? '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Status</span>
+                                        <span className="detail__info-value">{malAnime.status || '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Tayang</span>
+                                        <span className="detail__info-value">{malAnime.aired?.prop?.string || '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Durasi</span>
+                                        <span className="detail__info-value">{malAnime.duration || '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Rating</span>
+                                        <span className="detail__info-value">{malAnime.rating || '—'}</span>
+                                    </div>
+                                    <div className="detail__info-row">
+                                        <span className="detail__info-label">Sumber</span>
+                                        <span className="detail__info-value">{malAnime.source || '—'}</span>
+                                    </div>
+                                    {malAnime.broadcast?.string && (
+                                        <div className="detail__info-row">
+                                            <span className="detail__info-label">Jadwal Tayang</span>
+                                            <span className="detail__info-value">{malAnime.broadcast.string}</span>
+                                        </div>
+                                    )}
+                                    {malAnime.url && (
+                                        <div style={{ marginTop: '12px' }}>
+                                            <a
+                                                href={malAnime.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="detail__btn detail__btn--secondary"
+                                                style={{ fontSize: '0.8rem', padding: '8px 14px', display: 'inline-flex' }}
+                                            >
+                                                <ExternalLink size={14} /> Halaman MAL
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Genres & Themes */}
+                                {(malAnime.genres?.length > 0 || malAnime.themes?.length > 0) && (
+                                    <div className="detail__sidebar-card">
+                                        <h3>Genre &amp; Tema</h3>
+                                        <div className="detail__genres">
+                                            {malAnime.genres?.map((g) => (
+                                                <span key={g.mal_id} className="badge badge--accent">{g.name}</span>
+                                            ))}
+                                            {malAnime.themes?.map((t) => (
+                                                <span key={t.mal_id} className="badge badge--info">{t.name}</span>
+                                            ))}
+                                            {malAnime.demographics?.map((d) => (
+                                                <span key={d.mal_id} className="badge badge--warning">{d.name}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Studios & Producers from MAL */}
+                                {(malAnime.studios?.length > 0 || malAnime.producers?.length > 0) && (
+                                    <div className="detail__sidebar-card">
+                                        <h3>Produksi</h3>
+                                        {malAnime.studios?.length > 0 && (
+                                            <>
+                                                <div className="detail__info-label" style={{ marginBottom: '8px', fontSize: '0.8rem' }}>Studios</div>
+                                                <div className="detail__genres" style={{ marginBottom: '12px' }}>
+                                                    {malAnime.studios.map((s) => (
+                                                        <span key={s.mal_id} className="badge badge--accent">{s.name}</span>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                        {malAnime.producers?.length > 0 && (
+                                            <>
+                                                <div className="detail__info-label" style={{ marginBottom: '8px', fontSize: '0.8rem' }}>Producers</div>
+                                                <div className="detail__genres">
+                                                    {malAnime.producers.map((p) => (
+                                                        <span key={p.mal_id} className="badge badge--info">{p.name}</span>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Licensors */}
+                                {malAnime.licensors?.length > 0 && (
+                                    <div className="detail__sidebar-card">
+                                        <h3>Lisensi</h3>
+                                        <div className="detail__genres">
+                                            {malAnime.licensors.map((l) => (
+                                                <span key={l.mal_id} className="badge badge--warning">{l.name}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
