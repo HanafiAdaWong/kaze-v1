@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../models/anime_card_model.dart';
 import '../widgets/anime_card.dart';
@@ -28,39 +29,43 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _handleSearch() async {
-    if (_searchController.text.isEmpty) return;
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
     setState(() {
       _loading = true;
       _results = [];
     });
     
     try {
-      final query = _searchController.text;
-      
-      final searches = await Future.wait([
-        ApiService.searchAnime(query).catchError((e) => {'data': []}),
-        ApiService.searchDrachin(query).catchError((e) => []),
-        ApiService.searchDonghua(query).catchError((e) => []),
+      // PERBAIKAN: Gunakan tipe eksplisit Future<dynamic> untuk menghindari error Iterable
+      final searches = await Future.wait<dynamic>(<Future<dynamic>>[
+        ApiService.searchAnime(query).catchError((e) => null),
+        ApiService.searchDonghua(query).catchError((e) => null),
       ]);
 
       final animeRaw = searches[0];
-      final drachinRaw = searches[1];
-      final donghuaRaw = searches[2];
+      final donghuaRaw = searches[1];
 
       List<AnimeCardModel> combined = [];
 
-      // Process Anime (Now from Sanka)
-      if (animeRaw is List) {
+      if (animeRaw != null && animeRaw is Map && animeRaw['animeList'] is List) {
+        combined.addAll((animeRaw['animeList'] as List).map((e) => AnimeCardModel.fromSanka(e, typeOverride: 'anime')));
+      } else if (animeRaw is List) {
         combined.addAll(animeRaw.map((e) => AnimeCardModel.fromSanka(e, typeOverride: 'anime')));
       }
-      if (drachinRaw is List) {
-        combined.addAll(drachinRaw.map((e) => AnimeCardModel.fromSanka(e, typeOverride: 'drachin')));
-      }
-      if (donghuaRaw is List) {
-        combined.addAll(donghuaRaw.map((e) => AnimeCardModel.fromSanka(e, typeOverride: 'donghua')));
+
+      if (donghuaRaw != null) {
+        List? dList;
+        if (donghuaRaw is List) dList = donghuaRaw;
+        else if (donghuaRaw is Map) dList = donghuaRaw['data'] ?? donghuaRaw['animeList'];
+
+        if (dList != null) {
+          combined.addAll(dList.map((e) => AnimeCardModel.fromSanka(e, typeOverride: 'donghua')));
+        }
       }
 
-      setState(() => _results = combined);
+      if (mounted) setState(() => _results = combined);
     } catch (e) {
       debugPrint('Search error: $e');
     } finally {
@@ -71,37 +76,69 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0F),
       appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Cari anime, drachin, atau donghua...',
-            border: InputBorder.none,
-            prefixIcon: Icon(LucideIcons.search, size: 20),
-          ),
-          onSubmitted: (_) => _handleSearch(),
+        backgroundColor: const Color(0xFF0A0A0F),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.chevronLeft, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
+        title: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF18181B),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+          ),
+          child: TextField(
+            controller: _searchController,
+            autofocus: widget.initialQuery == null,
+            style: const TextStyle(fontSize: 14, color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Cari anime atau donghua...',
+              hintStyle: TextStyle(color: Colors.white24),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
+            ),
+            onSubmitted: (_) => _handleSearch(),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.search, color: Color(0xFF3B82F6), size: 20),
+            onPressed: _handleSearch,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)))
           : _results.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(LucideIcons.searchX, size: 60, color: Colors.white10),
-                      SizedBox(height: 16),
-                      Text('Tidak ada hasil ditemukan.', style: TextStyle(color: Colors.white30)),
+                      Icon(LucideIcons.search, size: 64, color: Colors.white.withOpacity(0.05)),
+                      const SizedBox(height: 16),
+                      Text(
+                        _searchController.text.isEmpty
+                          ? 'Cari anime favoritmu'
+                          : 'Tidak ada hasil untuk "${_searchController.text}"',
+                        style: const TextStyle(color: Colors.white38),
+                      ),
                     ],
                   ),
                 )
               : GridView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.6,
+                    childAspectRatio: 0.58,
                     crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
+                    mainAxisSpacing: 20,
                   ),
                   itemCount: _results.length,
                   itemBuilder: (context, index) => AnimeCard(

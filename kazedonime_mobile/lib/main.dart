@@ -4,7 +4,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'services/supabase_service.dart';
 import 'pages/home_page.dart';
 import 'pages/profile_page.dart';
-import 'pages/search_page.dart';
+import 'pages/genre_page.dart';
+import 'pages/donghua_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +23,17 @@ class KazedonimeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFFA855F7),
-        scaffoldBackgroundColor: const Color(0xFF09090B),
+        primaryColor: const Color(0xFF3B82F6),
+        scaffoldBackgroundColor: const Color(0xFF0A0A0F),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFA855F7),
-          secondary: Color(0xFFC084FC),
-          surface: Color(0xFF18181B),
+          primary: Color(0xFF3B82F6),
+          secondary: Color(0xFF38BDF8),
+          surface: Color(0xFF12121A),
         ),
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+          bodyMedium: GoogleFonts.inter(color: const Color(0xFFEAEAF0)),
+          bodyLarge: GoogleFonts.inter(color: const Color(0xFFEAEAF0)),
+        ),
         useMaterial3: true,
       ),
       home: const MainNavigation(),
@@ -57,33 +61,43 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: const [
           HomePage(),
-          SearchPage(),
-          Scaffold(body: Center(child: Text('Halaman Riwayat'))),
+          GenrePage(),
+          DonghuaPage(),
           ProfilePage(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-          _pageController.jumpToPage(index);
-        },
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF18181B),
-        selectedItemColor: const Color(0xFFA855F7),
-        unselectedItemColor: Colors.white54,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(LucideIcons.home), label: 'Sinopsis'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.search), label: 'Cari'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.clock), label: 'Riwayat'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.user), label: 'Profil'),
-        ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0F).withOpacity(0.95),
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.08))),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() => _currentIndex = index);
+            _pageController.jumpToPage(index);
+          },
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: const Color(0xFF3B82F6),
+          unselectedItemColor: Colors.white38,
+          selectedLabelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: GoogleFonts.inter(fontSize: 11),
+          showUnselectedLabels: true,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(LucideIcons.home, size: 22), label: 'Beranda'),
+            BottomNavigationBarItem(icon: Icon(LucideIcons.tag, size: 22), label: 'Genre'),
+            BottomNavigationBarItem(icon: Icon(LucideIcons.clapperboard, size: 22), label: 'Donghua'),
+            BottomNavigationBarItem(icon: Icon(LucideIcons.user, size: 22), label: 'Masuk'),
+          ],
+        ),
       ),
     );
   }

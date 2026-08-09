@@ -1,0 +1,273 @@
+{
+  "status": "success",
+  "creator": "Sanka Vollerei",
+  "statusCode": 200,
+  "statusMessage": "OK",
+  "message": "",
+  "ok": true,
+  "data": {
+    "ongoing": {
+      "href": "/anime/ongoing-anime",
+      "otakudesuUrl": "https://otakudesu.blog/ongoing-anime/",
+      "animeList": [
+        {
+          "title": "Nijusseiki Denki Mokuroku",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/158475.jpg",
+          "episodes": 6,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "10 Agu",
+          "animeId": "nijusseiki-denki-mokuroku-sub-indo",
+          "href": "/anime/anime/nijusseiki-denki-mokuroku-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/nijusseiki-denki-mokuroku-sub-indo/"
+        },
+        {
+          "title": "Mushoku Tensei : Isekai Ittara Honki Dasu Season 3",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/158340.jpg",
+          "episodes": 7,
+          "releaseDay": "Sabtu",
+          "latestReleaseDate": "10 Agu",
+          "animeId": "mushoku-ni-tensei-s3-sub-indo",
+          "href": "/anime/anime/mushoku-ni-tensei-s3-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/mushoku-ni-tensei-s3-sub-indo/"
+        },
+        {
+          "title": "Seihantai na Kimi to Boku Season 2",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Seihantai-na-Kimi-to-Boku-Season-2-Sub.jpg",
+          "episodes": 6,
+          "releaseDay": "Senin",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "seihantai-kimi-boku-s2-sub-indo",
+          "href": "/anime/anime/seihantai-kimi-boku-s2-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/seihantai-kimi-boku-s2-sub-indo/"
+        },
+        {
+          "title": "Sekai Saikyou no Kouei",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Sekai-Saikyou-no-Kouei-Sub.jpg",
+          "episodes": 6,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "sekai-saikyou-kouei-sub-indo",
+          "href": "/anime/anime/sekai-saikyou-kouei-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/sekai-saikyou-kouei-sub-indo/"
+        },
+        {
+          "title": "Oni no Hanayome",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Oni-no-Hanayome.jpg",
+          "episodes": 6,
+          "releaseDay": "Senin",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "oni-hanayome-sub-indo",
+          "href": "/anime/anime/oni-hanayome-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/oni-hanayome-sub-indo/"
+        },
+        {
+          "title": "Futsutsuka na Akujo dewa Gozaimasu ga",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/158341-1.jpg",
+          "episodes": 5,
+          "releaseDay": "Senin",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "futsutsuka-akujo-gozaimasu-sub-indo",
+          "href": "/anime/anime/futsutsuka-akujo-gozaimasu-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/futsutsuka-akujo-gozaimasu-sub-indo/"
+        },
+        {
+          "title": "Digimon Beatbreak",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2025/10/Digimon-Beatbreak.jpg",
+          "episodes": 42,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "digimon-bb-sub-indo",
+          "href": "/anime/anime/digimon-bb-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/digimon-bb-sub-indo/"
+        },
+        {
+          "title": "Neko to Ryuu",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/157796.jpg",
+          "episodes": 7,
+          "releaseDay": "Sabtu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "neko-ryuu-sub-indo",
+          "href": "/anime/anime/neko-ryuu-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/neko-ryuu-sub-indo/"
+        },
+        {
+          "title": "Saijo no Osewa",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Saijo-no-Osewa.jpg",
+          "episodes": 6,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "saijo-osewa-sub-indo",
+          "href": "/anime/anime/saijo-osewa-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/saijo-osewa-sub-indo/"
+        },
+        {
+          "title": "Mahou Shoujo Lyrical Nanoha EXCEEDS",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Mahou-Shoujo-Lyrical-Nanoha-EXCEEDS.jpg",
+          "episodes": 6,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "mahou-shoujo-exceeds-sub-indo",
+          "href": "/anime/anime/mahou-shoujo-exceeds-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/mahou-shoujo-exceeds-sub-indo/"
+        },
+        {
+          "title": "Mao",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/04/Mao.jpg",
+          "episodes": 19,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "mao-sub-indo",
+          "href": "/anime/anime/mao-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/mao-sub-indo/"
+        },
+        {
+          "title": "Tenmaku no Jaadugar",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/158227.jpg",
+          "episodes": 7,
+          "releaseDay": "Minggu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "tenmaku-jaadugar-sub-indo",
+          "href": "/anime/anime/tenmaku-jaadugar-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/tenmaku-jaadugar-sub-indo/"
+        },
+        {
+          "title": "Bleach: Sennen Kessen-hen - Kashin-tan",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/158595.jpg",
+          "episodes": 3,
+          "releaseDay": "Sabtu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "bleach-kashin-tan-sub-indo",
+          "href": "/anime/anime/bleach-kashin-tan-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/bleach-kashin-tan-sub-indo/"
+        },
+        {
+          "title": "Yomi no Tsugai",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/04/156397.jpg",
+          "episodes": 18,
+          "releaseDay": "Sabtu",
+          "latestReleaseDate": "09 Agu",
+          "animeId": "yomi-tsugai-sub-indo",
+          "href": "/anime/anime/yomi-tsugai-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/yomi-tsugai-sub-indo/"
+        },
+        {
+          "title": "Black Torch",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Black-Torch.jpg",
+          "episodes": 6,
+          "releaseDay": "Sabtu",
+          "latestReleaseDate": "08 Agu",
+          "animeId": "black-torch-sub-indo",
+          "href": "/anime/anime/black-torch-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/black-torch-sub-indo/"
+        }
+      ]
+    },
+    "completed": {
+      "href": "/anime/complete-anime",
+      "otakudesuUrl": "https://otakudesu.blog/complete-anime/",
+      "animeList": [
+        {
+          "title": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e Season 4",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Youkoso-Jitsuryoku-Shijou-Shugi-no-Kyoushitsu-e-Season-4-Sub-Indo.jpg",
+          "episodes": 16,
+          "score": "7.85",
+          "lastReleaseDate": "24 Jul",
+          "animeId": "youkoso-jitsuryoku-shijou-shugi-no-kyoushitsu-e-s4-sub-indo",
+          "href": "/anime/anime/youkoso-jitsuryoku-shijou-shugi-no-kyoushitsu-e-s4-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/youkoso-jitsuryoku-shijou-shugi-no-kyoushitsu-e-s4-sub-indo/"
+        },
+        {
+          "title": "Jidou Hanbaiki ni Umarekawatta Ore wa Meikyuu wo Samayou Season 3",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Jidou-Hanbaiki-ni-Umarekawatta-Ore-wa-Meikyuu-wo-Samayou-Season-3-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "6.76",
+          "lastReleaseDate": "24 Jul",
+          "animeId": "vending-machine-s3-sub-indo",
+          "href": "/anime/anime/vending-machine-s3-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/vending-machine-s3-sub-indo/"
+        },
+        {
+          "title": "Class de 2-banme ni Kawaii Onnanoko to Tomodachi ni Natta",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Class-de-2-banme-ni-Kawaii-Onnanoko-to-Tomodachi-ni-Natta-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "7.80",
+          "lastReleaseDate": "15 Jul",
+          "animeId": "class2-banme-kawaii-tomodachi-natta-sub-indo",
+          "href": "/anime/anime/class2-banme-kawaii-tomodachi-natta-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/class2-banme-kawaii-tomodachi-natta-sub-indo/"
+        },
+        {
+          "title": "Aishiteru Game wo Owarasetai",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Aishiteru-Game-wo-Owarasetai-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "7.42",
+          "lastReleaseDate": "14 Jul",
+          "animeId": "aishiteru-game-owarasetai-sub-indo",
+          "href": "/anime/anime/aishiteru-game-owarasetai-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/aishiteru-game-owarasetai-sub-indo/"
+        },
+        {
+          "title": "Ponsuka",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Ponsuka-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "7.61",
+          "lastReleaseDate": "11 Jul",
+          "animeId": "ponkotsu-fuuki-skirt-sub-indo",
+          "href": "/anime/anime/ponkotsu-fuuki-skirt-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/ponkotsu-fuuki-skirt-sub-indo/"
+        },
+        {
+          "title": "Lastame Season 2",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Lastame-Season-2-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "6.92",
+          "lastReleaseDate": "11 Jul",
+          "animeId": "lastame-s2-sub-indo",
+          "href": "/anime/anime/lastame-s2-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/lastame-s2-sub-indo/"
+        },
+        {
+          "title": "Tongari Boushi no Atelier",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Tongari-Boushi-no-Atelier-Sub-Indo.jpg",
+          "episodes": 13,
+          "score": "8.53",
+          "lastReleaseDate": "11 Jul",
+          "animeId": "tongari-boushi-atelier-sub-indo",
+          "href": "/anime/anime/tongari-boushi-atelier-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/tongari-boushi-atelier-sub-indo/"
+        },
+        {
+          "title": "Ghost Concert: Missing Songs",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Ghost-Concert-Missing-Songs-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "5.41",
+          "lastReleaseDate": "05 Jul",
+          "animeId": "ghost-concert-sub-indo",
+          "href": "/anime/anime/ghost-concert-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/ghost-concert-sub-indo/"
+        },
+        {
+          "title": "Akane-banashi",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Akane-banashi-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "7.94",
+          "lastReleaseDate": "05 Jul",
+          "animeId": "akane-banasi-sub-indo",
+          "href": "/anime/anime/akane-banasi-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/akane-banasi-sub-indo/"
+        },
+        {
+          "title": "Otonari no Tenshi-sama ni Itsunomanika Dame Ningen ni Sareteita Ken 2",
+          "poster": "https://otakudesu.blog/wp-content/uploads/2026/07/Otonari-no-Tenshi-sama-ni-Itsunomanika-Dame-Ningen-ni-Sareteita-Ken-2-Sub-Indo.jpg",
+          "episodes": 12,
+          "score": "7.05",
+          "lastReleaseDate": "04 Jul",
+          "animeId": "otonari-ni-tenshi-s2-sub-indo",
+          "href": "/anime/anime/otonari-ni-tenshi-s2-sub-indo",
+          "otakudesuUrl": "https://otakudesu.blog/anime/otonari-ni-tenshi-s2-sub-indo/"
+        }
+      ]
+    }
+  },
+  "pagination": null
+}

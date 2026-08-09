@@ -7,6 +7,7 @@ class AnimeCardModel {
   final String? status;
   final String? type;
   final String? currentEpisode;
+  final String? score;
 
   AnimeCardModel({
     this.id,
@@ -17,10 +18,10 @@ class AnimeCardModel {
     this.status,
     this.type,
     this.currentEpisode,
+    this.score,
   });
 
   factory AnimeCardModel.fromJikan(Map<String, dynamic> json) {
-    // Try to get the best available image URL
     String posterUrl = '';
     try {
       posterUrl = json['images']?['jpg']?['large_image_url'] ?? 
@@ -34,6 +35,7 @@ class AnimeCardModel {
       poster: posterUrl,
       status: json['status'],
       type: json['type'],
+      score: json['score']?.toString(),
     );
   }
 
@@ -44,7 +46,6 @@ class AnimeCardModel {
       slug = slug.substring(0, slug.length - 1);
     }
 
-    // Try to get title from slug if empty (common in some Drachin sources)
     if (title.isEmpty && slug.isNotEmpty) {
       title = slug.replaceFirst(RegExp(r'^\d+-'), '').split('-').map((word) {
         if (word.isEmpty) return '';
@@ -52,22 +53,21 @@ class AnimeCardModel {
       }).join(' ');
     }
 
-    // Advanced Target Slug Resolution (for detail page navigation)
     String targetSlug = json['animeId'] ?? json['parent_slug'] ?? json['series_slug'] ?? slug;
     
     if (targetSlug == slug && slug.contains('-episode-')) {
-      // Reconstruct series slug from episode slug: series-title-episode-123 -> series-title
       targetSlug = slug.split('-episode-')[0];
     }
 
     return AnimeCardModel(
-      slug: targetSlug, // This will be used as the primary ID for DetailPage
+      slug: targetSlug,
       seriesSlug: targetSlug,
       title: title,
       poster: json['poster'] ?? '',
       status: json['status'],
       type: typeOverride ?? json['type'],
       currentEpisode: json['current_episode'] ?? json['episode_info'],
+      score: json['score']?.toString(),
     );
   }
 }

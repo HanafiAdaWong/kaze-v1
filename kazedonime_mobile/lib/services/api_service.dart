@@ -1,136 +1,143 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
 class ApiService {
   static final Dio _dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 20),
-    receiveTimeout: const Duration(seconds: 20),
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json',
     },
   ));
 
-  static const String _jikanBase = 'https://api.jikan.moe/v4';
   static const String _sankaBase = 'https://www.sankavollerei.com/anime';
-  static const String _meloloBase = 'https://melolo-api-azure.vercel.app/api/melolo';
 
-  static dynamic _extractData(Response res) {
-    final body = res.data;
-    if (body is Map && body['data'] != null) return body['data'];
-    return body;
+  /// Proxy RAW AllOrigins untuk menembus CORS di Web (Chrome)
+  static String _wrapUrl(String path) {
+    final target = '$_sankaBase$path';
+    if (kIsWeb) {
+      // Menggunakan /raw agar mendapatkan data murni tanpa wrapper JSON tambahan
+      return 'https://api.allorigins.win/raw?url=${Uri.encodeFull(target)}';
+    }
+    return target;
   }
 
-  // ============================================
-  // Anime & Search
-  // ============================================
+  static dynamic _processResponse(Response res) {
+    try {
+      var data = res.data;
+      if (data is String) {
+        data = jsonDecode(data);
+      }
 
-  static Future<Map<String, dynamic>> getTopAnime({int page = 1, String filter = ''}) async {
-    final response = await _dio.get('$_jikanBase/top/anime', queryParameters: {
-      'page': page,
-      'limit': 24,
-      'sfw': true,
-      if (filter.isNotEmpty) 'filter': filter,
-    });
-    return response.data;
+      // Ambil field 'data' jika ada pembungkusnya (Struktur standar Sanka)
+      if (data is Map && data['data'] != null) return data['data'];
+      return data;
+    } catch (e) {
+      debugPrint('JSON Decode Error: $e');
+      return null;
+    }
   }
-
-  static Future<dynamic> searchAnime(String query, {int page = 1}) async {
-    final response = await _dio.get('$_sankaBase/search/${Uri.encodeComponent(query)}', queryParameters: {
-      'page': page,
-    });
-    final data = _extractData(response);
-    return data is Map ? (data['animeList'] ?? []) : [];
-  }
-
-  static Future<Map<String, dynamic>> getAnimeDetail(int id) async {
-    final response = await _dio.get('$_jikanBase/anime/$id');
-    return response.data['data'];
-  }
-
-  // ============================================
-  // Streaming (Resilient Parsing)
-  // ============================================
 
   static Future<dynamic> getWatchHome() async {
-    final response = await _dio.get('$_sankaBase/home');
-    return _extractData(response);
+    try {
+      final res = await _dio.get(_wrapUrl('/home'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
   }
-
-  static Future<dynamic> getWatchAnimeDetail(String animeId) async {
-    final response = await _dio.get('$_sankaBase/anime/$animeId');
-    return _extractData(response);
-  }
-
-  static Future<dynamic> getEpisodeDetail(String episodeId) async {
-    final response = await _dio.get('$_sankaBase/episode/$episodeId');
-    return _extractData(response);
-  }
-
-  static Future<dynamic> getServerUrl(String serverId) async {
-    final response = await _dio.get('$_sankaBase/server/$serverId');
-    return _extractData(response);
-  }
-
-  // ============================================
-  // Drachin (Drama China - Melolo)
-  // ============================================
-
-  static Future<dynamic> getDrachinHome() async {
-    final response = await _dio.get('$_meloloBase/latest');
-    final body = response.data;
-    return body is Map ? body['books'] : [];
-  }
-
-  static Future<dynamic> getDrachinDetail(String id) async {
-    final response = await _dio.get('$_meloloBase/detail/$id');
-    final body = response.data;
-    return body is Map && body['data'] != null ? body['data']['video_data'] : null;
-  }
-
-  static Future<dynamic> getDrachinStream(String vid) async {
-    final response = await _dio.get('$_meloloBase/stream/$vid');
-    return response.data;
-  }
-
-  static Future<dynamic> searchDrachin(String query) async {
-    final response = await _dio.get('$_meloloBase/search', queryParameters: {'query': query});
-    final body = response.data;
-    return body is Map ? body['books'] : [];
-  }
-
-  static String getDramaboxStreamUrl(String bookId, int index) {
-    return '$_sankaBase/dramabox/stream?bookId=$bookId&episode=$index';
-  }
-
-  // ============================================
-  // Donghua
-  // ============================================
 
   static Future<dynamic> getDonghuaHome() async {
-    final response = await _dio.get('$_sankaBase/donghua/home');
-    return _extractData(response);
+    try {
+      final res = await _dio.get(_wrapUrl('/donghua/home'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
   }
 
-  static Future<dynamic> getDonghuaDetail(String slug) async {
-    final response = await _dio.get('$_sankaBase/donghua/detail/$slug');
-    return _extractData(response);
+  static Future<dynamic> getGenres() async {
+    try {
+      final res = await _dio.get(_wrapUrl('/genre'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> getAnimeByGenre(String genreId) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/genre/$genreId'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> searchAnime(String query) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/search/${Uri.encodeComponent(query)}'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
   }
 
   static Future<dynamic> searchDonghua(String query) async {
-    final response = await _dio.get('$_sankaBase/donghua/search/${Uri.encodeComponent(query)}');
-    return _extractData(response);
+    try {
+      final res = await _dio.get(_wrapUrl('/donghua/search/${Uri.encodeComponent(query)}'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> getWatchAnimeDetail(String animeId) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/anime/$animeId'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> getEpisodeDetail(String episodeId) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/episode/$episodeId'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> getServerUrl(String serverId) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/server/$serverId'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<dynamic> getDonghuaDetail(String slug) async {
+    try {
+      final res = await _dio.get(_wrapUrl('/donghua/detail/$slug'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
   }
 
   static Future<dynamic> getDonghuaEpisode(String slug) async {
-    final response = await _dio.get('$_sankaBase/donghua/episode/$slug');
-    return _extractData(response);
+    try {
+      final res = await _dio.get(_wrapUrl('/donghua/episode/$slug'));
+      return _processResponse(res);
+    } catch (e) {
+      return null;
+    }
   }
 
-  static String getDonghuaStreamUrl(String slug) {
-    return '$_sankaBase/donghua/episode/$slug';
-  }
-
-  static String getStreamUrl(String slug) {
-    return '$_sankaBase/episode/$slug';
-  }
+  static String getDonghuaStreamUrl(String slug) => '$_sankaBase/donghua/episode/$slug';
+  static String getStreamUrl(String slug) => '$_sankaBase/episode/$slug';
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Play, Maximize2, Monitor, Download, Info, Video, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Maximize2, Monitor, Download, Info, Video, List, HardDrive, FileText, ExternalLink } from 'lucide-react';
 import Loader from './Loader';
 
 export default function UnifiedPlayerUI({
@@ -18,13 +18,14 @@ export default function UnifiedPlayerUI({
     animeData = {},
     episodesList = [],
     downloadUrl,
+    downloadFormats = [],
     onFullscreen,
     playerNode
 }) {
     return (
         <div className="unified-player-page">
             <div className="unified-player-container">
-                
+
                 {/* Main Content (Left) */}
                 <div className="unified-player-main">
                     {/* Video Player Box */}
@@ -118,8 +119,41 @@ export default function UnifiedPlayerUI({
                         )}
                     </div>
 
-                    {/* Download Accordion (Optional) */}
-                    {downloadUrl && (
+                    {/* Download Section */}
+                    {downloadFormats && downloadFormats.length > 0 ? (
+                        <div className="unified-sidebar-box" style={{ marginTop: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 600, padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <Download size={18} /> Link Download
+                            </div>
+                            <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {downloadFormats.map((q, idx) => (
+                                    <div key={idx}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                            <HardDrive size={14} />
+                                            <span style={{ fontWeight: 600, color: '#fff' }}>{q.title}</span>
+                                            {q.size && (
+                                                <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>{q.size}</span>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                            {q.urls?.map((u, uIdx) => (
+                                                <a
+                                                    key={uIdx}
+                                                    href={u.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="unified-btn"
+                                                    style={{ padding: '6px 12px', fontSize: '0.8rem', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                >
+                                                    {u.title} <ExternalLink size={12} />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : downloadUrl && (
                         <div className="unified-sidebar-box" style={{ marginTop: '16px', padding: '16px 24px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 600 }}>
@@ -135,7 +169,7 @@ export default function UnifiedPlayerUI({
 
                 {/* Sidebar (Right) */}
                 <div className="unified-player-sidebar">
-                    
+
                     {/* Anime Details Box */}
                     {animeData.title && (
                         <div className="unified-sidebar-box">
@@ -192,9 +226,9 @@ export default function UnifiedPlayerUI({
                             <h3 className="unified-sidebar-title"><List size={18} /> Semua Episode</h3>
                             <div className="unified-ep-list">
                                 {episodesList.map((ep, i) => (
-                                    <Link 
-                                        key={i} 
-                                        to={ep.url} 
+                                    <Link
+                                        key={i}
+                                        to={ep.url}
                                         className={`unified-ep-item ${ep.isActive ? 'active' : ''}`}
                                     >
                                         {ep.title}

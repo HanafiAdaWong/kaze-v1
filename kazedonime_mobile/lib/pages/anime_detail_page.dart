@@ -1,6 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/api_service.dart';
 import '../widgets/anime_card.dart' show proxyImageUrl;
 import 'video_player_page.dart';
@@ -40,23 +41,16 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
       _loading = true;
       _error = null;
     });
-
     try {
       dynamic json;
-      if (widget.type == 'drachin') {
-        json = await ApiService.getDrachinDetail(widget.animeId);
-      } else if (widget.type == 'donghua') {
+      // Perbaikan: Menghapus pengecekan 'drachin' yang sudah tidak ada
+      if (widget.type == 'donghua') {
         json = await ApiService.getDonghuaDetail(widget.animeId);
       } else {
-        // Anime (Otakudesu) - response has { data: { ... }, pagination: { ... } }
-        final res = await ApiService.getWatchAnimeDetail(widget.animeId);
-        // _extractData already handles the 'data' unwrapping in ApiService
-        json = res;
+        json = await ApiService.getWatchAnimeDetail(widget.animeId);
       }
-
       if (mounted) setState(() => _detail = json);
     } catch (e) {
-      debugPrint('[DetailPage] Fetch Error: $e');
       if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -65,9 +59,6 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
 
   List _getEpisodes() {
     if (_detail == null) return [];
-    // Anime (Otakudesu): episodeList
-    // Donghua: episodes_list
-    // Drachin: episodes
     dynamic epList = _detail['episodeList'] ??
         _detail['episodes_list'] ??
         _detail['episode_list'] ??
@@ -80,11 +71,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     if (value == null) return fallback;
     if (value is String) return value;
     if (value is Map) {
-      // Handle synopsis: { paragraphs: ["..."] }
       if (value['paragraphs'] is List && (value['paragraphs'] as List).isNotEmpty) {
         return value['paragraphs'][0].toString();
       }
-      // Handle score: { value: "8.5" }
       if (value['value'] != null) return value['value'].toString();
     }
     return value.toString();
@@ -94,101 +83,124 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   Widget build(BuildContext context) {
     final posterUrl = proxyImageUrl(widget.poster);
     final episodes = _getEpisodes();
-    final title = _s(_detail?['title'] ?? _detail?['english'] ?? _detail?['synonyms'], widget.title);
+    final title = _s(_detail?['title'] ?? _detail?['english'], widget.title);
     final synopsis = _s(_detail?['synopsis'] ?? _detail?['description'], 'Belum ada sinopsis.');
 
     return Scaffold(
-      backgroundColor: const Color(0xFF09090B),
+      backgroundColor: const Color(0xFF0A0A0F),
       body: CustomScrollView(
         slivers: [
-          // Hero poster
           SliverAppBar(
-            expandedHeight: 380,
+            expandedHeight: 420,
             pinned: true,
+            backgroundColor: const Color(0xFF0A0A0F),
             leading: IconButton(
-              icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
+              icon: const CircleAvatar(
+                backgroundColor: Colors.black45,
+                child: Icon(LucideIcons.chevronLeft, color: Colors.white, size: 20),
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    posterUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(color: const Color(0xFF1a1a2e)),
+                  Image.network(posterUrl, fit: BoxFit.cover),
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(color: Colors.black.withOpacity(0.5)),
                   ),
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0xFF09090B)],
+                        colors: [Colors.transparent, Color(0xFF0A0A0F)],
+                        stops: [0.3, 1.0],
                       ),
                     ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        height: 200,
+                        width: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 20)
+                          ],
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(11),
+                          child: Image.network(posterUrl, fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildMetaBadges(episodes.length),
+                      const SizedBox(height: 30),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-
-          // Content
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Metadata badges
+                  Text('Sinopsis',
+                      style: GoogleFonts.outfit(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Text(synopsis,
+                      style: const TextStyle(
+                          color: Colors.white60, height: 1.7, fontSize: 14)),
+                  const SizedBox(height: 32),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (_detail?['score'] != null) ...[
-                        const Icon(LucideIcons.star, size: 16, color: Colors.amber),
-                        const SizedBox(width: 6),
-                        Text(_s(_detail['score'], 'N/A'),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                        const SizedBox(width: 16),
-                      ],
-                      const Icon(LucideIcons.playCircle, size: 16, color: Colors.white70),
-                      const SizedBox(width: 6),
-                      Text('${episodes.length} Episode',
-                        style: const TextStyle(color: Colors.white70)),
+                      Text('Daftar Episode',
+                          style: GoogleFonts.outfit(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('${episodes.length} Total',
+                          style: const TextStyle(
+                              color: Colors.white38, fontSize: 12)),
                     ],
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Title
-                  Text(title,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-
-                  const SizedBox(height: 12),
-
-                  // Synopsis
-                  Text(synopsis,
-                    style: const TextStyle(color: Colors.white54, height: 1.6, fontSize: 14)),
-
-                  const SizedBox(height: 28),
-
-                  // Episode header
-                  const Text('Daftar Episode',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-
-                  const SizedBox(height: 12),
-
-                  // Loading / Error / Episode List
                   if (_loading)
-                    const Center(child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(color: Color(0xFFA855F7)),
-                    ))
+                    const Center(
+                        child: Padding(
+                            padding: EdgeInsets.all(40),
+                            child: CircularProgressIndicator(
+                                color: Color(0xFF3B82F6))))
                   else if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text('Error: $_error', style: const TextStyle(color: Colors.redAccent)),
-                    )
+                    Text('Gagal memuat data: $_error',
+                        style: const TextStyle(color: Colors.redAccent))
                   else
-                    _buildEpisodeList(episodes),
+                    _buildEpisodeGrid(episodes),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -198,89 +210,85 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     );
   }
 
-  Widget _buildEpisodeList(List episodes) {
-    if (episodes.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Center(child: Text('Episode belum tersedia.', style: TextStyle(color: Colors.white30))),
-      );
-    }
+  Widget _buildMetaBadges(int epCount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (_detail?['score'] != null) ...[
+          const Icon(LucideIcons.star, size: 14, color: Colors.amber),
+          const SizedBox(width: 4),
+          Text(_s(_detail['score']),
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          const SizedBox(width: 12),
+        ],
+        const Icon(LucideIcons.playCircle, size: 14, color: Color(0xFF3B82F6)),
+        const SizedBox(width: 6),
+        Text('$epCount Episode',
+            style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w500)),
+        const SizedBox(width: 12),
+        Text(widget.type.toUpperCase(),
+            style: const TextStyle(
+                color: Color(0xFF3B82F6),
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1)),
+      ],
+    );
+  }
 
-    return ListView.separated(
+  Widget _buildEpisodeGrid(List episodes) {
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 5,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+      ),
       itemCount: episodes.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
       itemBuilder: (context, index) {
         final ep = episodes[index];
-        // Otakudesu: ep.eps, ep.episodeId
-        // Donghua: ep.episode, ep.slug
-        // Drachin: ep.title, ep.bookId, ep.index
-        final String epTitle = _s(
-          ep['eps'] ?? ep['episode'] ?? ep['title'],
-          'Episode ${index + 1}',
-        );
-
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Container(
-            width: 36, height: 36,
+        return GestureDetector(
+          onTap: () => _playEpisode(ep, index, episodes),
+          child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFA855F7).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFF18181B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
             child: Center(
               child: Text('${index + 1}',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFA855F7))),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold, color: Colors.white70)),
             ),
           ),
-          title: Text(epTitle, style: const TextStyle(fontSize: 14, color: Colors.white)),
-          trailing: const Icon(LucideIcons.playCircle, size: 20, color: Colors.white24),
-          onTap: () => _playEpisode(ep, epTitle, index),
         );
       },
     );
   }
 
-  void _playEpisode(Map ep, String epTitle, int index) {
-    if (widget.type == 'drachin') {
-      // Drachin: use getDrachinEpisode(slug, index) → videos map
-      final epIndex = _s(ep['index'] ?? ep['episode_index'], '${index + 1}');
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VideoPlayerPage(
-            url: '', // Not used for drachin
-            title: epTitle,
-            drachinSlug: widget.animeId, // The series slug
-            drachinIndex: epIndex,
-          ),
-        ),
-      );
-      return;
-    }
-
-    String streamUrl = '';
-    if (widget.type == 'donghua') {
-      final slug = _s(ep['slug'] ?? ep['episodeId'], '');
-      streamUrl = ApiService.getDonghuaStreamUrl(slug);
-    } else {
-      // Anime (Otakudesu)
-      final slug = _s(ep['episodeId'] ?? ep['slug'], '');
-      streamUrl = ApiService.getStreamUrl(slug);
-    }
-
-    if (streamUrl.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Slug episode tidak ditemukan.')),
-      );
-      return;
-    }
+  void _playEpisode(Map ep, int currentIndex, List allEpisodes) {
+    final String epTitle =
+        _s(ep['eps'] ?? ep['episode'] ?? ep['title'], 'Episode ${currentIndex + 1}');
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => VideoPlayerPage(url: streamUrl, title: epTitle),
+        builder: (_) => VideoPlayerPage(
+          url: widget.type == 'donghua'
+              ? ApiService.getDonghuaStreamUrl(_s(ep['slug'] ?? ep['episodeId']))
+              : ApiService.getStreamUrl(_s(ep['episodeId'] ?? ep['slug'])),
+          title: epTitle,
+          type: widget.type,
+          animeId: widget.animeId,
+          episodes: allEpisodes,
+          currentIndex: currentIndex,
+          animeDetail: _detail,
+        ),
       ),
     );
   }

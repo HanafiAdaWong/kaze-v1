@@ -333,8 +333,12 @@ function EpisodePlayer() {
         isActive: ep.episodeId === episodeId
     }))?.reverse() || []
 
-    const genres = episode.genreList?.map(g => g.title) || []
+    const genres = episode.genreList?.map(g => g.title) || episode.info?.genreList?.map(g => g.title) || []
     const synopsis = translating ? 'Menterjemahkan sinopsis...' : (translatedSynopsis || episode.synopsis?.paragraphs?.[0] || '')
+
+    // downloadUrl.qualities is the flat list from API:
+    // [{ title, size, urls: [{title, url}] }]
+    const downloadFormats = episode.downloadUrl?.qualities || []
 
     return (
         <>
@@ -360,6 +364,8 @@ function EpisodePlayer() {
                     detailUrl: `/watch/${animeId}`
                 }}
                 episodesList={episodesList}
+                downloadFormats={downloadFormats}
+                downloadUrl={typeof episode.downloadUrl === 'string' ? episode.downloadUrl : null}
                 onFullscreen={handleFullscreen}
             />
             {/* Comments section below the unified player */}
