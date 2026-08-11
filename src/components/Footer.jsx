@@ -6,6 +6,14 @@ function Footer() {
                     <div>
                         <div className="footer__brand gradient-text">Kazedonime</div>
                         <p className="footer__text">Teman setia pencari anime favoritmu</p>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+                            <a href="https://www.tiktok.com/@kazeserenity" target="_blank" rel="noopener noreferrer">
+                                <img src="https://ik.imagekit.io/lhtvft4ai/tiktok.png" alt="TikTok" style={{ width: '28px', height: '28px', transition: 'transform 0.2s', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.1))' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            </a>
+                            <a href="https://www.instagram.com/kaze_serenity_indo/" target="_blank" rel="noopener noreferrer">
+                                <img src="https://ik.imagekit.io/lhtvft4ai/instagram.png" alt="Instagram" style={{ width: '28px', height: '28px', transition: 'transform 0.2s', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.1))' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            </a>
+                        </div>
                     </div>
 
                     <div className="footer__discord">
