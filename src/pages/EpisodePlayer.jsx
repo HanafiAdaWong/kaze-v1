@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, ChevronLeft, ChevronRight, Play, Monitor, Maximize2
 } from 'lucide-react'
-import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getAnimasuEpisodeDetail, getZoronimeEpisodeDetail, getAnoboyEpisodeDetail, getSamehadakuEpisodeDetail } from '../services/api'
+import { getEpisodeDetail, getServerUrl, getWatchAnimeDetail, getZoronimeEpisodeDetail, getAnoboyEpisodeDetail, getSamehadakuEpisodeDetail } from '../services/api'
 import { addToHistory } from '../utils/history'
 import Loader from '../components/Loader'
 import Comments from '../components/Comments'
@@ -38,18 +38,12 @@ function EpisodePlayer() {
             let data
             let bypassSlug = episodeId
 
-            if (source === 'animasu' && !bypassSlug.startsWith('nonton-')) {
-                bypassSlug = `nonton-${bypassSlug}`
-            }
-
             if (source === 'anoboy') {
                 // Anoboy often uses '...subtitle-indonesia' suffix
                 if (!bypassSlug.includes('subtitle-indonesia')) {
                     bypassSlug = `${bypassSlug}-subtitle-indonesia`
                 }
                 data = await getAnoboyEpisodeDetail(bypassSlug)
-            } else if (source === 'animasu') {
-                data = await getAnimasuEpisodeDetail(bypassSlug)
             } else if (source === 'zoronime') {
                 data = await getZoronimeEpisodeDetail(bypassSlug)
             } else if (source === 'samehadaku') {
@@ -251,13 +245,7 @@ function EpisodePlayer() {
                                 >
                                     Gunakan Server Samehadaku
                                 </button>
-                                <button
-                                    className="error-container__btn"
-                                    style={{ background: 'var(--accent-primary)', border: 'none' }}
-                                    onClick={() => handleBypass('animasu')}
-                                >
-                                    Gunakan Server Animasu
-                                </button>
+
                                 <button
                                     className="error-container__btn"
                                     style={{ background: '#3b82f6', border: 'none' }}

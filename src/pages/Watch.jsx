@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Play, TrendingUp, Clock, CheckCircle } from 'lucide-react'
-import { getWatchHome, searchWatchAnime, searchAnimasu, searchSamehadaku } from '../services/api'
+import { getWatchHome, searchWatchAnime, searchSamehadaku } from '../services/api'
 import Loader from '../components/Loader'
 
 function WatchCard({ anime }) {
-    const isAnimasu = anime.source === 'animasu'
     const isSamehadaku = anime.source === 'samehadaku'
     const slug = (anime.animeId || anime.id || anime.slug || '').replace(/\/$/, '')
-    const targetUrl = isAnimasu ? `/animasu/${slug}` : isSamehadaku ? `/samehadaku/${slug}` : `/watch/${slug}`
-    
+    const targetUrl = isSamehadaku ? `/samehadaku/${slug}` : `/watch/${slug}`
+
     return (
         <Link to={targetUrl} className="anime-card">
             <div className="anime-card__image-wrap">
@@ -69,26 +68,15 @@ function Watch() {
         setError(null)
         try {
             if (queryFromUrl) {
-                const [watchRes, animasuRes, samehadakuRes] = await Promise.allSettled([
+                const [watchRes, samehadakuRes] = await Promise.allSettled([
                     searchWatchAnime(queryFromUrl),
-                    searchAnimasu(queryFromUrl),
                     searchSamehadaku(queryFromUrl)
                 ])
 
-                const watchList = watchRes.status === 'fulfilled' && watchRes.value 
+                const watchList = watchRes.status === 'fulfilled' && watchRes.value
                     ? (watchRes.value.animeList || (Array.isArray(watchRes.value) ? watchRes.value : []))
                     : []
-                
-                const animasuList = animasuRes.status === 'fulfilled' && animasuRes.value && animasuRes.value.animes
-                    ? animasuRes.value.animes.map(item => ({
-                        ...item,
-                        source: 'animasu',
-                        animeId: item.slug,
-                        status: item.status_or_day,
-                        episodes: item.episode?.replace(' Episode', '') || ''
-                    }))
-                    : []
-                
+
                 const samehadakuList = samehadakuRes.status === 'fulfilled' && samehadakuRes.value && samehadakuRes.value.data && samehadakuRes.value.data.animeList
                     ? samehadakuRes.value.data.animeList.map(item => ({
                         ...item,
@@ -98,7 +86,7 @@ function Watch() {
                     : []
 
                 setSearchResults({
-                    animeList: [...watchList, ...animasuList, ...samehadakuList]
+                    animeList: [...watchList, ...samehadakuList]
                 })
             } else {
                 const data = await getWatchHome()

@@ -346,27 +346,7 @@ export async function getZoronimeEpisodeDetail(slug) {
     return json;
 }
 
-/** [BYPASS] Get episode from Animasu specifically */
-export async function getAnimasuEpisodeDetail(slug) {
-    const json = await fetchSanka(`/episode/${slug}`, 'episode', 'animasu');
-    // Animasu structure has streams at top level, not inside data
-    return json;
-}
 
-export async function getAnimasuHome() {
-    const json = await fetchSanka('/home', 'home', 'animasu');
-    return json;
-}
-
-export async function searchAnimasu(query) {
-    const json = await fetchSanka(`/search/${encodeURIComponent(query)}`, 'search', 'animasu');
-    return json;
-}
-
-export async function getAnimasuDetail(slug) {
-    const json = await fetchSanka(`/detail/${slug}`, 'detail', 'animasu');
-    return json.detail;
-}
 
 /** [BYPASS] Get episode from Anoboy specifically */
 export async function getAnoboyEpisodeDetail(slug) {
