@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api/sanka': {
-        target: 'https://www.sankavollerei.com',
+        target: 'https://www.sankavollerei.web.id',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/sanka/, '/anime'),
         secure: false,

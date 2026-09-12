@@ -1,5 +1,5 @@
 // Vercel Serverless Function — Proxy to Sanka Vollerei API
-// Forwards all /api/sanka/* requests to sankavollerei.com/anime/*
+// Forwards all /api/sanka/* requests to sankavollerei.web.id/anime/*
 
 export default async function handler(req, res) {
     try {
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         const pathname = urlObj.pathname; // e.g. "/api/sanka/home" or "/api/sanka/samehadaku/home"
         const targetPath = pathname.replace(/^\/api\/sanka/, ''); // e.g. "/home" or "/samehadaku/home"
         const queryString = urlObj.search || '';
-        const targetUrl = `https://www.sankavollerei.com/anime${targetPath}${queryString}`;
+        const targetUrl = `https://www.sankavollerei.web.id/anime${targetPath}${queryString}`;
 
         const response = await fetch(targetUrl, {
             method: req.method || 'GET',
