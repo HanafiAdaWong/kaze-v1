@@ -25,3 +25,7 @@ dist-ssr
 
 # Supabase
 .supabase/
+
+# Android build & test scripts
+kazedonime_mobile/android/build/
+test.js

@@ -9,6 +9,7 @@ import Loader from '../components/Loader'
 import Comments from '../components/Comments'
 import UnifiedPlayerUI from '../components/UnifiedPlayerUI'
 import { translate } from '../utils/translator'
+import { findPreferredServer } from '../utils/serverHelper'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 
@@ -62,18 +63,17 @@ function EpisodePlayer() {
             })
             setIsBypass(true)
 
-            // Auto-load first stream if available
-            const streams = finalData.streams || []
-            if (streams.length > 0) {
-                setStreamUrl(streams[0].url)
-                setActiveServer('bypass-0')
-            } else if (finalData.server?.qualities?.length > 0) {
-                const firstQuality = finalData.server.qualities.find(q => q.serverList?.length > 0)
-                if (firstQuality) {
-                    const firstServer = firstQuality.serverList[0]
-                    const serverData = await getServerUrl(firstServer.serverId, source)
-                    setStreamUrl(serverData.url)
-                    setActiveServer(firstServer.serverId)
+            // Auto-load preferred server (720p Mega) if available
+            const preferred = findPreferredServer(finalData.server?.qualities)
+            if (preferred) {
+                const serverData = await getServerUrl(preferred.server.serverId, source)
+                setStreamUrl(serverData.url)
+                setActiveServer(preferred.server.serverId)
+            } else {
+                const streams = finalData.streams || []
+                if (streams.length > 0) {
+                    setStreamUrl(streams[0].url)
+                    setActiveServer('bypass-0')
                 }
             }
         } catch (err) {
@@ -134,12 +134,35 @@ function EpisodePlayer() {
                     addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
                 }
 
-                // Auto-load first available server
-                if (data.defaultStreamingUrl) {
+                // Auto-load preferred server (720p Mega) if available
+                const preferred = findPreferredServer(data.server?.qualities)
+                if (preferred) {
+                    setActiveServer(preferred.server.serverId)
+                    setPlayerLoading(true)
+                    try {
+                        const currentSource = data.source ? data.source.toLowerCase() : ''
+                        const serverData = await getServerUrl(preferred.server.serverId, currentSource)
+                        if (!cancelled) {
+                            setStreamUrl(serverData.url)
+                        }
+                    } catch (err) {
+                        if (!cancelled) {
+                            console.error('Preferred server load failed, falling back to default:', err)
+                            if (data.defaultStreamingUrl) {
+                                setStreamUrl(data.defaultStreamingUrl)
+                                setActiveServer('default')
+                            } else {
+                                setServerError('Gagal memuat server. Coba pilih server lain.')
+                            }
+                        }
+                    } finally {
+                        if (!cancelled) setPlayerLoading(false)
+                    }
+                } else if (data.defaultStreamingUrl) {
                     setStreamUrl(data.defaultStreamingUrl)
                     setActiveServer('default')
                 } else if (data.server?.qualities?.length > 0) {
-                    // Find first quality with servers
+                    // Fallback to first quality with servers
                     for (const q of data.server.qualities) {
                         if (q.serverList?.length > 0) {
                             const first = q.serverList[0]
@@ -280,7 +303,7 @@ function EpisodePlayer() {
         }))
     }))
 
-    // Build flat servers for controls bar (bypass + default)
+    // Build flat servers for controls bar
     let flatServers = []
     if (episode.streams && episode.streams.length > 0) {
         episode.streams.forEach((stream, i) => {
@@ -293,6 +316,25 @@ function EpisodePlayer() {
     }
     if (episode.defaultStreamingUrl) {
         flatServers.push({ id: 'default', name: 'Player Default', isActive: activeServer === 'default' })
+    }
+
+    // Include the currently active quality server in controls bar if activeServer is from server qualities
+    if (activeServer && activeServer !== 'default' && !activeServer.startsWith('bypass-')) {
+        let activeServerObj = null
+        for (const q of allQualities) {
+            const found = q.serverList?.find(s => s.serverId === activeServer)
+            if (found) {
+                activeServerObj = { name: `${found.title} (${q.title})`, id: found.serverId }
+                break
+            }
+        }
+        if (activeServerObj) {
+            flatServers.unshift({
+                id: activeServerObj.id,
+                name: activeServerObj.name,
+                isActive: true
+            })
+        }
     }
 
     const handleUnifiedServerClick = (serverId) => {

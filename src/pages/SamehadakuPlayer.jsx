@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
 import UnifiedPlayerUI from '../components/UnifiedPlayerUI'
+import { findPreferredServer } from '../utils/serverHelper'
 
 function SamehadakuPlayer() {
     const { slug } = useParams()
@@ -38,7 +39,7 @@ function SamehadakuPlayer() {
                         episodeId: slug,
                         title: finalData.title || 'Samehadaku Anime',
                         episodeTitle: finalData.title || slug,
-                        poster: finalData.poster || 'https://ik.imagekit.io/lhtvft4ai/Logo%20kaze.png',
+                        poster: finalData.poster || '/logo-kaze.png',
                         type: 'samehadaku',
                         timestamp: Date.now()
                     })
@@ -48,8 +49,30 @@ function SamehadakuPlayer() {
                         addXP(user.id, 10).catch(err => console.error('Error adding XP:', err));
                     }
 
-                    // Auto-load first available server
-                    if (finalData.defaultStreamingUrl) {
+                    // Auto-load preferred server (720p Mega) if available
+                    const preferred = findPreferredServer(finalData.server?.qualities)
+                    if (preferred) {
+                        setActiveServer(preferred.server.serverId)
+                        setPlayerLoading(true)
+                        try {
+                            const serverData = await getServerUrl(preferred.server.serverId, 'samehadaku')
+                            if (!cancelled) {
+                                setStreamUrl(serverData.url)
+                            }
+                        } catch (err) {
+                            if (!cancelled) {
+                                console.error('Preferred server load failed, falling back:', err)
+                                if (finalData.defaultStreamingUrl) {
+                                    setStreamUrl(finalData.defaultStreamingUrl)
+                                    setActiveServer('default')
+                                } else {
+                                    setServerError('Gagal memuat server. Coba pilih server lain.')
+                                }
+                            }
+                        } finally {
+                            if (!cancelled) setPlayerLoading(false)
+                        }
+                    } else if (finalData.defaultStreamingUrl) {
                         setStreamUrl(finalData.defaultStreamingUrl)
                         setActiveServer('default')
                     } else if (finalData.server?.qualities?.length > 0) {

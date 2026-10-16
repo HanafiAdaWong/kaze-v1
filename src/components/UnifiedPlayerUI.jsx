@@ -50,7 +50,8 @@ export default function UnifiedPlayerUI({
                                         src={streamUrl}
                                         title={title}
                                         allowFullScreen
-                                        allow="autoplay; fullscreen; encrypted-media"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerPolicy="no-referrer-when-downgrade"
                                         className="unified-video-iframe"
                                     />
                                 ) : (

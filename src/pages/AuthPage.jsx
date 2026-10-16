@@ -104,7 +104,7 @@ function AuthPage() {
                 {/* Form panel */}
                 <div className="auth-form-panel">
                     <Link to="/" className="auth-brand">
-                        <img src="https://ik.imagekit.io/lhtvft4ai/Logo%20kaze.png" alt="Kazedonime" className="navbar__logo-img" />
+                        <img src="/logo-kaze.png" alt="Kazedonime" className="navbar__logo-img" />
                         <span className="gradient-text">Kazedonime</span>
                     </Link>
 

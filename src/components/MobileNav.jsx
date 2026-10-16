@@ -1,10 +1,8 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Tags, Play, Heart, Clock, User, Tv, Clapperboard, BookOpen } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { Home, Tags, Clock, Clapperboard } from 'lucide-react'
 
 function MobileNav() {
     const location = useLocation()
-    const { isAuthenticated } = useAuth()
 
     const isActive = (path) => location.pathname === path
     const isWatchActive = location.pathname.startsWith('/watch')
@@ -44,47 +42,15 @@ function MobileNav() {
                     <span>Donghua</span>
                 </Link>
 
-                {isAuthenticated ? (
-                    <>
-                        <Link
-                            to="/mylist"
-                            className={`mobile-nav__link ${isActive('/mylist') ? 'mobile-nav__link--active' : ''}`}
-                        >
-                            <div className="mobile-nav__icon-wrap">
-                                <Heart size={20} fill={isActive('/mylist') ? 'currentColor' : 'none'} />
-                            </div>
-                            <span>List</span>
-                        </Link>
-                        <Link
-                            to="/history"
-                            className={`mobile-nav__link ${isActive('/history') ? 'mobile-nav__link--active' : ''}`}
-                        >
-                            <div className="mobile-nav__icon-wrap">
-                                <Clock size={20} />
-                            </div>
-                            <span>History</span>
-                        </Link>
-                        <Link
-                            to="/profile"
-                            className={`mobile-nav__link ${isActive('/profile') ? 'mobile-nav__link--active' : ''}`}
-                        >
-                            <div className="mobile-nav__icon-wrap">
-                                <User size={20} />
-                            </div>
-                            <span>Profil</span>
-                        </Link>
-                    </>
-                ) : (
-                    <Link
-                        to="/login"
-                        className={`mobile-nav__link ${isActive('/login') ? 'mobile-nav__link--active' : ''}`}
-                    >
-                        <div className="mobile-nav__icon-wrap">
-                            <User size={20} />
-                        </div>
-                        <span>Masuk</span>
-                    </Link>
-                )}
+                <Link
+                    to="/history"
+                    className={`mobile-nav__link ${isActive('/history') ? 'mobile-nav__link--active' : ''}`}
+                >
+                    <div className="mobile-nav__icon-wrap">
+                        <Clock size={22} />
+                    </div>
+                    <span>History</span>
+                </Link>
             </div>
         </div>
     )

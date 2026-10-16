@@ -3,13 +3,11 @@ import { AuthProvider } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
 import MobileNav from './components/MobileNav'
 import Footer from './components/Footer'
-import ProtectedRoute from './components/ProtectedRoute'
 import MainHome from './pages/MainHome'
 import AnimeDetail from './pages/AnimeDetail'
 import Watch from './pages/Watch'
 import WatchAnimeDetail from './pages/WatchAnimeDetail'
 import EpisodePlayer from './pages/EpisodePlayer'
-import AuthPage from './pages/AuthPage'
 import MyList from './pages/MyList'
 import Profile from './pages/Profile'
 import UserProfile from './pages/UserProfile'
@@ -37,28 +35,15 @@ function App() {
                 <Routes>
                     <Route path="/" element={<MainHome />} />
                     <Route path="/anime/:id" element={<AnimeDetail />} />
-                    <Route path="/login" element={<AuthPage />} />
                     <Route path="/watch" element={<Watch />} />
                     <Route path="/user/:userId" element={<UserProfile />} />
-                    <Route path="/mylist" element={
-                        <ProtectedRoute>
-                            <MyList />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                        <ProtectedRoute>
-                            <Profile />
-                        </ProtectedRoute>
-                    } />
+                    <Route path="/mylist" element={<MyList />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/watch/:animeId" element={<WatchAnimeDetail />} />
                     <Route
                         path="/watch/:animeId/episode/:episodeId"
-                        element={
-                            <ProtectedRoute>
-                                <EpisodePlayer />
-                            </ProtectedRoute>
-                        }
+                        element={<EpisodePlayer />}
                     />
                     <Route path="/genres" element={<Genres />} />
                     <Route path="/genres/:genreId" element={<GenreAnime />} />

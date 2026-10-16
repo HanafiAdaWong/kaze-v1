@@ -94,11 +94,11 @@ function History() {
                                     <Link to={getTypePath(item)} className="history-item__link">
                                         <div className="history-item__image">
                                             <img
-                                                src={item.poster || 'https://ik.imagekit.io/lhtvft4ai/Logo%20kaze.png'}
+                                                src={item.poster || '/logo-kaze.png'}
                                                 alt={item.title}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
-                                                    e.target.src = 'https://ik.imagekit.io/lhtvft4ai/Logo%20kaze.png';
+                                                    e.target.src = '/logo-kaze.png';
                                                 }}
                                             />
                                             <div className="history-item__overlay">
