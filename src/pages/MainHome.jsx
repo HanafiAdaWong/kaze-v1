@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Play, TrendingUp, CheckCircle, ChevronRight, Sparkles, Clapperboard, BookOpen, Clock, Search } from 'lucide-react'
 import { getWatchHome, getDonghuaHome } from '../services/api'
+import { getProxyImageUrl } from '../utils/imageProxy'
 import Loader from '../components/Loader'
 import OngoingAnimeSlider from '../components/OngoingAnimeSlider'
 import HeroBanner from '../components/HeroBanner'
@@ -49,7 +50,7 @@ function DonghuaHomeCard({ donghua }) {
         <Link to={`/donghua/episode/${cleanSlug}`} className="main-home-card">
             <div className="main-home-card__image-wrap">
                 <img
-                    src={donghua.poster}
+                    src={getProxyImageUrl(donghua.poster)}
                     alt={donghua.title}
                     loading="lazy"
                     className="main-home-card__image"
@@ -272,16 +273,6 @@ function MainHome() {
                                     <div>
                                         <div className="main-home-shortcut__title">Donghua</div>
                                         <div className="main-home-shortcut__desc">Animasi China</div>
-                                    </div>
-                                    <ChevronRight size={20} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-                                </Link>
-                                <Link to="/sinopsis" className="main-home-shortcut">
-                                    <div className="main-home-shortcut__icon" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>
-                                        <BookOpen size={24} />
-                                    </div>
-                                    <div>
-                                        <div className="main-home-shortcut__title">Sinopsis</div>
-                                        <div className="main-home-shortcut__desc">Info & Rating Anime</div>
                                     </div>
                                     <ChevronRight size={20} style={{ marginLeft: 'auto', opacity: 0.5 }} />
                                 </Link>

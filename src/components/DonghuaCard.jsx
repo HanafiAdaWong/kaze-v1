@@ -1,11 +1,12 @@
 import { Play } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getProxyImageUrl } from '../utils/imageProxy'
 
 function DonghuaCard({ donghua }) {
     if (!donghua) return null
 
     const title = donghua.title
-    const poster = donghua.poster
+    const poster = getProxyImageUrl(donghua.poster)
     const slug = (donghua.slug || '').replace(/\/$/, '')
     const status = donghua.status
     const type = donghua.type

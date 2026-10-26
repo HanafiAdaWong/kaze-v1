@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play, Tv, Calendar, User } from 'lucide-react'
 import { getDonghuaDetail } from '../services/api'
+import { getProxyImageUrl } from '../utils/imageProxy'
 import Loader from '../components/Loader'
 
 function DonghuaDetail() {
@@ -56,7 +57,7 @@ function DonghuaDetail() {
     }
 
     const title = detail.title || ''
-    const poster = detail.poster || ''
+    const poster = getProxyImageUrl(detail.poster || '')
     const synopsis = detail.synopsis || ''
     const type = detail.type || 'Donghua'
     const status = detail.status || ''

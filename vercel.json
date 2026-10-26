@@ -9,6 +9,10 @@
             "destination": "/api/melolo.js"
         },
         {
+            "source": "/api/image-proxy",
+            "destination": "/api/image-proxy.js"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

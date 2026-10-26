@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play, MonitorPlay, ChevronLeft, ChevronRight, Maximize2, Monitor, RefreshCw } from 'lucide-react'
 import { getDonghuaEpisode } from '../services/api'
 import { addToHistory } from '../utils/history'
+import { getProxyImageUrl } from '../utils/imageProxy'
 import { useAuth } from '../contexts/AuthContext'
 import { addXP } from '../services/userStats'
 import Loader from '../components/Loader'
@@ -46,7 +47,7 @@ function DonghuaPlayer() {
                         episodeId: episodeSlug,
                         title: json.donghua_details?.title || json.title || 'Donghua',
                         episodeTitle: json.episode || episodeSlug,
-                        poster: json.donghua_details?.poster || json.poster || json.donghua_details?.image || json.image,
+                        poster: getProxyImageUrl(json.donghua_details?.poster || json.poster || json.donghua_details?.image || json.image),
                         type: 'donghua',
                         timestamp: Date.now()
                     })
@@ -155,7 +156,7 @@ function DonghuaPlayer() {
             genres={donghuaDetails.genres || []}
             animeData={{
                 title: donghuaTitle,
-                poster: donghuaDetails.poster || donghuaDetails.image,
+                poster: getProxyImageUrl(donghuaDetails.poster || donghuaDetails.image),
                 score: donghuaDetails.score || donghuaDetails.rating,
                 status: donghuaDetails.status,
                 detailUrl: `/donghua/${donghuaSlug}`
