@@ -163,12 +163,22 @@ async function fetchSanka(endpoint, cacheTtlKey = 'detail', source = 'samehadaku
             throw new Error('Rate limit tercapai. Tunggu sebentar lalu coba lagi.');
         }
 
-        // We handle !res.ok carefully because we want the JSON error message if available
-        if (!res.ok && res.status !== 404) {
-            throw new Error(`Server streaming error: ${res.status}`);
+        let json;
+        try {
+            json = await res.json();
+        } catch {
+            json = null;
         }
 
-        const json = await res.json();
+        // We handle !res.ok carefully because we want the JSON error message if available
+        if (!res.ok && res.status !== 404) {
+            const errorMsg = json?.message || json?.error || `Server streaming error: ${res.status}`;
+            throw new Error(errorMsg);
+        }
+
+        if (!json) {
+            throw new Error(`Server streaming error: ${res.status}`);
+        }
 
         // Donghua API has a different response format (no status:'success' wrapper)
         // so we skip validation for donghua source
